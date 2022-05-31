@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "750063069601",
+    "project_id": "pedal-custom",
+    "storage_bucket": "pedal-custom.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:750063069601:android:2cafdb7a38adedcf35c3e0",
+        "android_client_info": {
+          "package_name": "com.project.pedalcustom"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "750063069601-17ike20ucqqrpgtqnlik6fruptr5mf2k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4EXx34IrNsuV8LLlbPvjVBfHavpF7I20"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "750063069601-17ike20ucqqrpgtqnlik6fruptr5mf2k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Pedal Custom</string>
+    <string name="title_activity_homepage">Homepage</string>
+    <string name="title_home">Home</string>
+    <string name="title_transaction">Transaction</string>
+    <string name="title_wishlist">Wishlist</string>
+</resources>

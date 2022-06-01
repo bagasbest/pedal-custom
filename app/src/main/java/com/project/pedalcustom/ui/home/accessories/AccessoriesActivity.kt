@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.project.pedalcustom.R
 import com.project.pedalcustom.databinding.ActivityAccessoriesBinding
@@ -18,6 +19,8 @@ class AccessoriesActivity : AppCompatActivity() {
     private var binding : ActivityAccessoriesBinding ? = null
     private var adapter: AccessoriesAdapter? = null
     private var uid = ""
+    private var user : FirebaseUser? = null
+
 
     override fun onResume() {
         super.onResume()
@@ -33,6 +36,8 @@ class AccessoriesActivity : AppCompatActivity() {
             .load(R.drawable.bike_accesories)
             .into(binding!!.imageView2)
 
+        user = FirebaseAuth.getInstance().currentUser
+
         checkRole()
         binding?.backButton?.setOnClickListener { onBackPressed() }
         binding?.addAccessoriesBtn?.setOnClickListener {
@@ -42,23 +47,24 @@ class AccessoriesActivity : AppCompatActivity() {
     }
 
     private fun checkRole() {
-        val uid = FirebaseAuth.getInstance().currentUser!!.uid
-        FirebaseFirestore
-            .getInstance()
-            .collection("users")
-            .document(uid)
-            .get()
-            .addOnSuccessListener {
-                val role = "" + it.data!!["role"]
-                if(role == "admin") {
-                    binding?.addAccessoriesBtn?.visibility = View.VISIBLE
+        if(user != null) {
+            FirebaseFirestore
+                .getInstance()
+                .collection("users")
+                .document(user!!.uid)
+                .get()
+                .addOnSuccessListener {
+                    val role = "" + it.data!!["role"]
+                    if(role == "admin") {
+                        binding?.addAccessoriesBtn?.visibility = View.VISIBLE
+                    }
                 }
-            }
+        }
     }
 
     private fun initRecyclerView() {
 
-        if (FirebaseAuth.getInstance().currentUser != null) {
+        if (user != null) {
             uid = FirebaseAuth.getInstance().currentUser!!.uid
         }
 

@@ -1,13 +1,17 @@
 package com.project.pedalcustom.ui.home.sparepart
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
-import com.bumptech.glide.Glide
+import androidx.appcompat.app.AlertDialog
 import com.denzcoskun.imageslider.constants.ScaleTypes
 import com.denzcoskun.imageslider.models.SlideModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.project.pedalcustom.R
 import com.project.pedalcustom.databinding.ActivitySparePartDetailBinding
 import java.text.DecimalFormat
@@ -15,18 +19,19 @@ import java.text.DecimalFormat
 class SparePartDetailActivity : AppCompatActivity() {
     private var binding : ActivitySparePartDetailBinding? = null
     private var model: SparePartModel? = null
+    private var uid = ""
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySparePartDetailBinding.inflate(layoutInflater)
         setContentView(binding?.root)
 
-        Glide.with(this)
-            .load(R.drawable.bike_part)
-            .into(binding!!.imageView2)
 
         model = intent.getParcelableExtra(EXTRA_DATA)
         initSlider()
         getSparePartColor()
+        checkRole()
         val formatter = DecimalFormat("#,###")
 
         binding?.price?.text = "Rp." + formatter.format(model?.price)
@@ -46,6 +51,79 @@ class SparePartDetailActivity : AppCompatActivity() {
 
         binding?.addToCartBtn?.setOnClickListener {
 
+        }
+
+        binding?.edit?.setOnClickListener {
+            val intent = Intent(this, SparePartEditActivity::class.java)
+            intent.putExtra(SparePartEditActivity.EXTRA_DATA, model)
+            startActivity(intent)
+        }
+
+        binding?.delete?.setOnClickListener {
+            showDeleteDialog()
+        }
+
+
+    }
+
+    private fun showDeleteDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Confirm Delete Spare Part")
+            .setMessage("Are you sure want to delete this Spare Part ?")
+            .setIcon(R.drawable.ic_baseline_warning_24)
+            .setPositiveButton("YES") { dialogInterface, _ ->
+                dialogInterface.dismiss()
+                deleteSparePart()
+            }
+            .setNegativeButton("NO", null)
+            .show()
+    }
+
+    private fun deleteSparePart() {
+        FirebaseFirestore
+            .getInstance()
+            .collection("spare_parts")
+            .document(model?.uid!!)
+            .delete()
+            .addOnCompleteListener {
+                if(it.isSuccessful) {
+                    AlertDialog.Builder(this)
+                        .setTitle("Success Delete Spare Part")
+                        .setMessage("Operation success")
+                        .setIcon(R.drawable.ic_baseline_check_circle_outline_24)
+                        .setPositiveButton("OK") { dialogInterface, _ ->
+                            dialogInterface.dismiss()
+                            onBackPressed()
+                        }
+                        .show()
+                } else {
+                    AlertDialog.Builder(this)
+                        .setTitle("Failure Delete Spare Part")
+                        .setMessage("Ups, your internet connection already trouble, pleas try again later!")
+                        .setIcon(R.drawable.ic_baseline_check_circle_outline_24)
+                        .setPositiveButton("OK") { dialogInterface, _ ->
+                            dialogInterface.dismiss()
+                            onBackPressed()
+                        }
+                }
+            }
+    }
+
+    private fun checkRole() {
+        if(FirebaseAuth.getInstance().currentUser != null) {
+            uid = FirebaseAuth.getInstance().currentUser!!.uid
+            FirebaseFirestore
+                .getInstance()
+                .collection("users")
+                .document(uid)
+                .get()
+                .addOnSuccessListener {
+                    val role = "" + it.data!!["role"]
+                    if(role == "admin") {
+                        binding?.edit?.visibility = View.VISIBLE
+                        binding?.delete?.visibility = View.VISIBLE
+                    }
+                }
         }
 
     }

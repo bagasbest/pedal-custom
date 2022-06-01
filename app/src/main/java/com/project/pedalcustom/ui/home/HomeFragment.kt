@@ -4,13 +4,16 @@ import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
 import com.project.pedalcustom.R
 import com.project.pedalcustom.authentication.LoginActivity
 import com.project.pedalcustom.authentication.RegisterActivity
@@ -27,7 +30,7 @@ class HomeFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
-    private val user = FirebaseAuth.getInstance().currentUser
+    private var user : FirebaseUser ? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,6 +39,8 @@ class HomeFragment : Fragment() {
     ): View {
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
+
+        user = FirebaseAuth.getInstance().currentUser
 
         initView()
         checkIsLoginOrNot()
@@ -51,11 +56,11 @@ class HomeFragment : Fragment() {
             progressDialog.setCancelable(false)
             progressDialog.show()
 
-            val uid = user.uid
+            val uid = user?.uid
             FirebaseFirestore
                 .getInstance()
                 .collection("users")
-                .document(uid)
+                .document(uid!!)
                 .get()
                 .addOnSuccessListener {
                     val name = "" + it.data!!["name"]

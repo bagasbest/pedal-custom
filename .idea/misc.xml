@@ -14,20 +14,24 @@
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_accessories.xml" value="0.23645833333333333" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_accessories_add.xml" value="0.23645833333333333" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_accessories_detail.xml" value="0.23645833333333333" />
+        <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_accessories_edit.xml" value="0.23645833333333333" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_bikes.xml" value="0.2328125" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_bikes_add.xml" value="0.2328125" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_bikes_detail.xml" value="0.2328125" />
+        <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_bikes_edit.xml" value="0.23645833333333333" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_homepage.xml" value="0.176" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_login.xml" value="0.152" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_main.xml" value="0.2" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_register.xml" value="0.176" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_spare_part_add.xml" value="0.23645833333333333" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_spare_part_detail.xml" value="0.23645833333333333" />
+        <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_spare_part_edit.xml" value="0.23645833333333333" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_sparepart.xml" value="0.23645833333333333" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/fragment_dashboard.xml" value="0.2328125" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/fragment_home.xml" value="0.2" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/fragment_wishlist.xml" value="0.2328125" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/item_bike.xml" value="0.2328125" />
+        <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/item_image_edit.xml" value="0.23541666666666666" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/menu/bottom_nav_menu.xml" value="0.2328125" />
       </map>
     </option>

@@ -3,17 +3,21 @@ package com.project.pedalcustom.ui.home
 import android.annotation.SuppressLint
 import android.app.ProgressDialog
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
 import com.project.pedalcustom.R
 import com.project.pedalcustom.authentication.LoginActivity
 import com.project.pedalcustom.authentication.RegisterActivity
@@ -22,6 +26,7 @@ import com.project.pedalcustom.ui.home.accessories.AccessoriesActivity
 import com.project.pedalcustom.ui.home.bikes.BikesActivity
 import com.project.pedalcustom.ui.home.profile.ProfileActivity
 import com.project.pedalcustom.ui.home.sparepart.SparePartActivity
+import com.project.pedalcustom.utils.User
 
 class HomeFragment : Fragment() {
 
@@ -31,6 +36,8 @@ class HomeFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
     private var user : FirebaseUser ? = null
+    private var image: String? = null
+    private val REQUEST_IMAGE_GALLERY = 1001
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -70,7 +77,7 @@ class HomeFragment : Fragment() {
                     if(image != "") {
                         Glide.with(this)
                             .load(image)
-                            .into(binding.imageView)
+                            .into(binding.image)
                     }
                     progressDialog.dismiss()
                 }
@@ -142,6 +149,69 @@ class HomeFragment : Fragment() {
         binding.item4.setOnClickListener {
             startActivity(Intent(activity, AccessoriesActivity::class.java))
         }
+
+        binding.image.setOnClickListener {
+            if(user != null) {
+                ImagePicker.with(this)
+                    .galleryOnly()
+                    .compress(1024)
+                    .start(REQUEST_IMAGE_GALLERY)
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == AppCompatActivity.RESULT_OK) {
+            if (requestCode == REQUEST_IMAGE_GALLERY) {
+                uploadArticleDp(data?.data)
+            }
+        }
+    }
+
+
+    /// fungsi untuk mengupload foto kedalam cloud storage
+    @SuppressLint("SetTextI18n")
+    private fun uploadArticleDp(data: Uri?) {
+        val mStorageRef = FirebaseStorage.getInstance().reference
+        val mProgressDialog = ProgressDialog(activity)
+        mProgressDialog.setMessage("Please wait until process finish...")
+        mProgressDialog.setCanceledOnTouchOutside(false)
+        mProgressDialog.show()
+        val imageFileName = "user/image_" + System.currentTimeMillis() + ".png"
+        mStorageRef.child(imageFileName).putFile(data!!)
+            .addOnSuccessListener {
+                mStorageRef.child(imageFileName).downloadUrl
+                    .addOnSuccessListener { uri: Uri ->
+                        mProgressDialog.dismiss()
+                        image = uri.toString()
+                        Glide.with(this)
+                            .load(image)
+                            .into(binding.image)
+
+                       User.saveImageUser(user?.uid, image!!, requireContext())
+
+                    }
+                    .addOnFailureListener { e: Exception ->
+                        mProgressDialog.dismiss()
+                        Toast.makeText(
+                            activity,
+                            "Gagal mengunggah gambar",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        Log.d("imageDp: ", e.toString())
+                    }
+            }
+            .addOnFailureListener { e: Exception ->
+                mProgressDialog.dismiss()
+                Toast.makeText(
+                    activity,
+                    "Gagal mengunggah gambar",
+                    Toast.LENGTH_SHORT
+                )
+                    .show()
+                Log.d("imageDp: ", e.toString())
+            }
     }
 
     override fun onDestroyView() {

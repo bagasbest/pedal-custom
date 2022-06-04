@@ -140,7 +140,9 @@ class HomeFragment : Fragment() {
         }
 
         binding.item2.setOnClickListener {
-            startActivity(Intent(activity, CustomActivity::class.java))
+            val intent = Intent(activity, CustomActivity::class.java)
+            intent.putExtra(CustomActivity.OPTION, "create")
+            startActivity(intent)
         }
 
         binding.item3.setOnClickListener {

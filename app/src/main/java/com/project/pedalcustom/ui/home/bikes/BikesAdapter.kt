@@ -29,7 +29,7 @@ class BikesAdapter(private val myUid: String) : RecyclerView.Adapter<BikesAdapte
         fun bind(model: BikesModel) {
             with(binding) {
                 val formatter = DecimalFormat("#,###")
-                var isFavorite = false
+                var isFavorite: Boolean
                 name.text = model.name
                 price.text = "Rp." + formatter.format(model.price)
                 Glide.with(itemView.context)

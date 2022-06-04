@@ -18,6 +18,9 @@
         android:theme="@style/Theme.PedalCustom"
         tools:targetApi="31">
         <activity
+            android:name=".ui.home.bike_custom.load_bike.LoadBikeActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.home.bike_custom.CustomActivity"
             android:exported="false" />
         <activity

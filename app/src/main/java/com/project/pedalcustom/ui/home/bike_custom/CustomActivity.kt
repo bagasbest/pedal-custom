@@ -17,6 +17,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.project.pedalcustom.R
 import com.project.pedalcustom.databinding.ActivityCustomeBinding
+import com.project.pedalcustom.ui.home.bike_custom.load_bike.LoadBikeActivity
+import com.project.pedalcustom.ui.home.bike_custom.load_bike.LoadBikeModel
 import com.project.pedalcustom.ui.home.sparepart.SparePartModel
 import com.project.pedalcustom.ui.home.sparepart.SparePartViewModel
 import com.project.pedalcustom.utils.IFirebaseLoadDone
@@ -33,7 +35,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
     private var isAssembled = false
     private var totalPriceCustomBike = 0L
     private val formatter = DecimalFormat("#,###")
-
+    private var model : LoadBikeModel ? = null
+    private var option = ""
 
     /// spare part price
     private var brakePrice = 0L
@@ -89,8 +92,13 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
         setContentView(binding?.root)
 
         iFirebaseLoadDone = this
-        initialCapacityList()
-
+        option = intent.getStringExtra(OPTION).toString()
+        if(option == "create") {
+            initialCapacityList()
+        } else {
+            model = intent.getParcelableExtra(EXTRA_DATA)
+            bikeType = model?.bikeType.toString()
+        }
         initBikeType()
 
         binding?.backButton?.setOnClickListener {
@@ -118,7 +126,7 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
         }
 
         binding?.loadBtn?.setOnClickListener {
-
+            startActivity(Intent(this, LoadBikeActivity::class.java))
         }
 
         binding?.brakeQty?.addTextChangedListener(object : TextWatcher {
@@ -784,7 +792,9 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
     }
 
     private fun initBikeType() {
-        bikeType = intent.getStringExtra(BIKE_TYPE).toString()
+        if(option == "create") {
+            bikeType = intent.getStringExtra(BIKE_TYPE).toString()
+        }
         if(bikeType != "null") {
 
             when (bikeType) {
@@ -1247,5 +1257,7 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
 
     companion object {
         const val BIKE_TYPE = "type"
+        const val EXTRA_DATA = "model"
+        const val OPTION = "load"
     }
 }

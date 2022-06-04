@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/drawable/bg_border.xml" value="0.1" />
+        <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/drawable/bg_border_et.xml" value="0.1555" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/drawable/bg_rounded_btn.xml" value="0.158" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/drawable/bg_rounded_right.xml" value="0.158" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/drawable/bg_rounded_top.xml" value="0.1" />
@@ -19,6 +20,7 @@
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_bikes_add.xml" value="0.2328125" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_bikes_detail.xml" value="0.2328125" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_bikes_edit.xml" value="0.23645833333333333" />
+        <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_custome.xml" value="0.264" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_homepage.xml" value="0.176" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_login.xml" value="0.152" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/activity_main.xml" value="0.2" />
@@ -33,8 +35,9 @@
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/fragment_wishlist.xml" value="0.264" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/item_bike.xml" value="0.2328125" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/item_image_edit.xml" value="0.23541666666666666" />
-        <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/item_wishlist.xml" value="0.4" />
+        <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/item_wishlist.xml" value="0.2" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/popup_edit_profile.xml" value="0.2328125" />
+        <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/layout/popup_save_custom.xml" value="0.264" />
         <entry key="..\:/TUBES_GALERI/PedalCustom/app/src/main/res/menu/bottom_nav_menu.xml" value="0.2328125" />
       </map>
     </option>

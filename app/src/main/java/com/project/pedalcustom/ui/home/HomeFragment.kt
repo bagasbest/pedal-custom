@@ -23,6 +23,7 @@ import com.project.pedalcustom.authentication.LoginActivity
 import com.project.pedalcustom.authentication.RegisterActivity
 import com.project.pedalcustom.databinding.FragmentHomeBinding
 import com.project.pedalcustom.ui.home.accessories.AccessoriesActivity
+import com.project.pedalcustom.ui.home.bike_custom.CustomActivity
 import com.project.pedalcustom.ui.home.bikes.BikesActivity
 import com.project.pedalcustom.ui.home.profile.ProfileActivity
 import com.project.pedalcustom.ui.home.sparepart.SparePartActivity
@@ -139,7 +140,7 @@ class HomeFragment : Fragment() {
         }
 
         binding.item2.setOnClickListener {
-
+            startActivity(Intent(activity, CustomActivity::class.java))
         }
 
         binding.item3.setOnClickListener {

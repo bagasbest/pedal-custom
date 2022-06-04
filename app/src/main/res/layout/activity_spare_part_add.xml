@@ -77,16 +77,34 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_marginTop="10dp">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/type"
+                <com.rosemaryapp.amazingspinner.AmazingSpinner
+                    android:id="@+id/sparePartType"
+                    style="@style/Widget.MaterialComponents.AutoCompleteTextView.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Spare Part Type (e.g: MTB)"
-                    android:inputType="text" />
+                    android:hint="Spare Part Type (e.g: Brake, Cranks, Drop Out)" />
 
             </com.google.android.material.textfield.TextInputLayout>
+
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                android:layout_marginTop="10dp">
+
+                <com.rosemaryapp.amazingspinner.AmazingSpinner
+                    android:id="@+id/bikeType"
+                    style="@style/Widget.MaterialComponents.AutoCompleteTextView.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="For Bike Type (e.g: BMX, MTB, or Racing)" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"

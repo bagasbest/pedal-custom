@@ -10,6 +10,7 @@ data class SparePartModel(
     var name : String? = null,
     var code : String? = null,
     var type : String? = null,
+    var bikeType : String? = null,
     var color : String? = null,
     var description : String? = null,
     var specification : String? = null,

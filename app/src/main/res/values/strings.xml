@@ -4,4 +4,37 @@
     <string name="title_home">Home</string>
     <string name="title_transaction">Transaction</string>
     <string name="title_wishlist">Wishlist</string>
+
+    <string-array name="bike_type">
+        <item>MTB</item>
+        <item>BMX</item>
+        <item>Folding</item>
+        <item>Racing</item>
+        <item>Any</item>
+    </string-array>
+
+    <string-array name="spare_part_type">
+        <item>Brake</item>
+        <item>Brake Levers</item>
+        <item>Chain Ring</item>
+        <item>Chain</item>
+        <item>Cranks</item>
+        <item>Derailleur</item>
+        <item>Drop Out</item>
+        <item>Frame</item>
+        <item>Fork</item>
+        <item>Handle Grip</item>
+        <item>Handle Stem</item>
+        <item>Handlebar</item>
+        <item>Headset</item>
+        <item>Hub</item>
+        <item>Hydrolines</item>
+        <item>Pedals</item>
+        <item>Rotor</item>
+        <item>Shock</item>
+        <item>Saddle</item>
+        <item>Seatpost</item>
+        <item>Wheel Set</item>
+    </string-array>
+
 </resources>

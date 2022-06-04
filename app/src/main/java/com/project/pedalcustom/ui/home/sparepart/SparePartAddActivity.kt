@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.bumptech.glide.Glide
@@ -23,11 +24,15 @@ class SparePartAddActivity : AppCompatActivity() {
     private var image: String? = null
     private val REQUEST_IMAGE_GALLERY = 1001
     private var imageList = ArrayList<String>()
+    private var sparePartType = ""
+    private var bikeType = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySparePartAddBinding.inflate(layoutInflater)
         setContentView(binding?.root)
+
+        showDropdown()
 
         Glide.with(this)
             .load(R.drawable.bike_part)
@@ -47,12 +52,40 @@ class SparePartAddActivity : AppCompatActivity() {
         binding?.uploadBtn?.setOnClickListener {
             formValidation()
         }
+
+
+
+    }
+
+    private fun showDropdown() {
+        val adapter = ArrayAdapter.createFromResource(
+            this,
+            R.array.spare_part_type, android.R.layout.simple_list_item_1
+        )
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        // Apply the adapter to the spinner
+        binding?.sparePartType?.setAdapter(adapter)
+        binding?.sparePartType?.setOnItemClickListener { _, _, _, _ ->
+            sparePartType = binding?.sparePartType!!.text.toString()
+        }
+
+        val adapter2 = ArrayAdapter.createFromResource(
+            this,
+            R.array.bike_type, android.R.layout.simple_list_item_1
+        )
+        // Specify the layout to use when the list of choices appears
+        adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        // Apply the adapter to the spinner
+        binding?.bikeType?.setAdapter(adapter2)
+        binding?.bikeType?.setOnItemClickListener { _, _, _, _ ->
+            bikeType = binding?.bikeType!!.text.toString()
+        }
     }
 
     private fun formValidation() {
         val name = binding?.name?.text.toString().trim()
         val code = binding?.code?.text.toString().trim()
-        val type = binding?.type?.text.toString().trim()
         val color = binding?.color?.text.toString().trim()
         val description = binding?.description?.text.toString().trim()
         val spec = binding?.specification?.text.toString().trim()
@@ -62,8 +95,10 @@ class SparePartAddActivity : AppCompatActivity() {
             Toast.makeText(this, "Spare part name must be filled!", Toast.LENGTH_SHORT).show()
         } else if (code.isEmpty()) {
             Toast.makeText(this, "Spare part code must be filled!", Toast.LENGTH_SHORT).show()
-        } else if (type.isEmpty()) {
-            Toast.makeText(this, "Spare part type must be filled!", Toast.LENGTH_SHORT).show()
+        } else if (sparePartType == "") {
+            Toast.makeText(this, "Spare part type must be choose!", Toast.LENGTH_SHORT).show()
+        }  else if (bikeType == "") {
+            Toast.makeText(this, "Bike type must be choose!", Toast.LENGTH_SHORT).show()
         } else if (color.isEmpty()) {
             Toast.makeText(this, "Spare part color must be filled!", Toast.LENGTH_SHORT).show()
         } else if (description.isEmpty()) {
@@ -84,7 +119,8 @@ class SparePartAddActivity : AppCompatActivity() {
                 "uid" to uid,
                 "name" to name,
                 "code" to code,
-                "type" to type,
+                "type" to sparePartType,
+                "bikeType" to bikeType,
                 "color" to color,
                 "description" to description,
                 "specification" to spec,

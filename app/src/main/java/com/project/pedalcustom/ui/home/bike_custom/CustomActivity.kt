@@ -2,6 +2,7 @@ package com.project.pedalcustom.ui.home.bike_custom
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.app.ProgressDialog
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -11,14 +12,18 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.project.pedalcustom.R
+import com.project.pedalcustom.authentication.LoginActivity
 import com.project.pedalcustom.databinding.ActivityCustomeBinding
 import com.project.pedalcustom.ui.home.bike_custom.load_bike.LoadBikeActivity
 import com.project.pedalcustom.ui.home.bike_custom.load_bike.LoadBikeModel
+import com.project.pedalcustom.ui.home.cart.CartActivity
 import com.project.pedalcustom.ui.home.sparepart.SparePartModel
 import com.project.pedalcustom.ui.home.sparepart.SparePartViewModel
 import com.project.pedalcustom.utils.IFirebaseLoadDone
@@ -36,6 +41,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
     private val formatter = DecimalFormat("#,###")
     private var model: LoadBikeModel? = null
     private var option = ""
+    private var user: FirebaseUser? = null
+
 
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +51,7 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
         setContentView(binding?.root)
 
         iFirebaseLoadDone = this
+        user = FirebaseAuth.getInstance().currentUser
         option = intent.getStringExtra(OPTION).toString()
         initialCapacityList()
 
@@ -68,7 +76,7 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
 
         binding?.saveBtn?.setOnClickListener {
             if (bikeType != "") {
-                if(option == "create") {
+                if (option == "create") {
                     saveCustomBikeToDatabase()
                 } else {
                     binding?.saveBtn?.isEnabled = false
@@ -88,10 +96,18 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                         .addOnCompleteListener {
                             binding?.saveBtn?.isEnabled = true
                             if (it.isSuccessful) {
-                                Toast.makeText(this, "Success overwrite custom bike!", Toast.LENGTH_SHORT)
+                                Toast.makeText(
+                                    this,
+                                    "Success overwrite custom bike!",
+                                    Toast.LENGTH_SHORT
+                                )
                                     .show()
                             } else {
-                                Toast.makeText(this, "Failure overwrite custom bike!", Toast.LENGTH_SHORT)
+                                Toast.makeText(
+                                    this,
+                                    "Failure overwrite custom bike!",
+                                    Toast.LENGTH_SHORT
+                                )
                                     .show()
                             }
                         }
@@ -106,15 +122,35 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
         }
 
         binding?.cartBtn?.setOnClickListener {
-
+            if (user != null) {
+                startActivity(Intent(this, CartActivity::class.java))
+            } else {
+                startActivity(Intent(this, LoginActivity::class.java))
+            }
         }
 
         binding?.accToCart?.setOnClickListener {
-
+            if (user != null) {
+                if (bikeType != "") {
+                    addBikeCustomToCart()
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Please choose bike type, and fill every column below!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } else {
+                startActivity(Intent(this, LoginActivity::class.java))
+            }
         }
 
         binding?.loadBtn?.setOnClickListener {
-            startActivity(Intent(this, LoadBikeActivity::class.java))
+            if (user != null) {
+                startActivity(Intent(this, LoadBikeActivity::class.java))
+            } else {
+                startActivity(Intent(this, LoginActivity::class.java))
+            }
         }
 
         binding?.brakeSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
@@ -126,23 +162,25 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
         })
 
-        binding?.brakeLeversSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                binding?.brakeLeversQty?.setText("")
-            }
+        binding?.brakeLeversSp?.onItemSelectedListener =
+            (object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                    binding?.brakeLeversQty?.setText("")
+                }
 
-            override fun onNothingSelected(p0: AdapterView<*>?) {
-            }
-        })
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                }
+            })
 
-        binding?.chainringSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                binding?.chainringQty?.setText("")
-            }
+        binding?.chainringSp?.onItemSelectedListener =
+            (object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                    binding?.chainringQty?.setText("")
+                }
 
-            override fun onNothingSelected(p0: AdapterView<*>?) {
-            }
-        })
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                }
+            })
 
         binding?.chainSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
@@ -162,14 +200,15 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
         })
 
-        binding?.derailleurSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                binding?.derailleurQty?.setText("")
-            }
+        binding?.derailleurSp?.onItemSelectedListener =
+            (object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                    binding?.derailleurQty?.setText("")
+                }
 
-            override fun onNothingSelected(p0: AdapterView<*>?) {
-            }
-        })
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                }
+            })
 
         binding?.dropOutSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
@@ -198,33 +237,36 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
         })
 
-        binding?.handleGripSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                binding?.handleGripQty?.setText("")
-            }
+        binding?.handleGripSp?.onItemSelectedListener =
+            (object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                    binding?.handleGripQty?.setText("")
+                }
 
-            override fun onNothingSelected(p0: AdapterView<*>?) {
-            }
-        })
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                }
+            })
 
-        binding?.handleStemSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                binding?.handleStemQty?.setText("")
-            }
+        binding?.handleStemSp?.onItemSelectedListener =
+            (object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                    binding?.handleStemQty?.setText("")
+                }
 
-            override fun onNothingSelected(p0: AdapterView<*>?) {
-            }
-        })
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                }
+            })
 
 
-        binding?.handleBarSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                binding?.handleBarQty?.setText("")
-            }
+        binding?.handleBarSp?.onItemSelectedListener =
+            (object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                    binding?.handleBarQty?.setText("")
+                }
 
-            override fun onNothingSelected(p0: AdapterView<*>?) {
-            }
-        })
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                }
+            })
 
         binding?.headSetSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
@@ -244,14 +286,15 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
         })
 
-        binding?.hydrolinesSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                binding?.hydrolinesQty?.setText("")
-            }
+        binding?.hydrolinesSp?.onItemSelectedListener =
+            (object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                    binding?.hydrolinesQty?.setText("")
+                }
 
-            override fun onNothingSelected(p0: AdapterView<*>?) {
-            }
-        })
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                }
+            })
 
         binding?.pedalsSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
@@ -321,8 +364,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -368,8 +411,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -415,8 +458,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -460,8 +503,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -505,8 +548,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -552,8 +595,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -599,8 +642,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -645,8 +688,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -690,8 +733,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -735,8 +778,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -781,8 +824,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -826,8 +869,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -872,8 +915,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -918,8 +961,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -964,8 +1007,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -1010,8 +1053,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -1057,8 +1100,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -1104,8 +1147,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -1152,8 +1195,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -1199,8 +1242,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -1246,8 +1289,8 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 var price = 0L
                 var productId = ""
 
-                for(i in sparePartList.indices) {
-                    if(sparePartList[i].name == name) {
+                for (i in sparePartList.indices) {
+                    if (sparePartList[i].name == name) {
                         price = sparePartList[i].price!!
                         productId = sparePartList[i].uid!!
 
@@ -1278,6 +1321,75 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
         })
+    }
+
+    private fun addBikeCustomToCart() {
+        val progressDialog = ProgressDialog(this)
+        progressDialog.setMessage("Please wait until finish...")
+        progressDialog.setCancelable(false)
+        progressDialog.show()
+        val customBikeList = ArrayList<CustomSparePartModel>()
+
+        val uid = System.currentTimeMillis().toString()
+        val userId = FirebaseAuth.getInstance().currentUser!!.uid
+
+        for (i in 0..21) {
+            if (customSparePartList[i].qty!! > 0) {
+                customBikeList.add(customSparePartList[i])
+            }
+        }
+
+        val data = mapOf(
+            "uid" to uid,
+            "name" to "Custom Bike",
+            "userId" to userId,
+            "totalPrice" to totalPriceCustomBike,
+            "type" to bikeType,
+            "customSparePartList" to customBikeList,
+            "isAssembled" to isAssembled,
+            "category" to "custom bike",
+            "qty" to 1,
+            "color" to "",
+            "image" to "",
+        )
+
+        FirebaseFirestore
+            .getInstance()
+            .collection("cart")
+            .document(uid)
+            .set(data)
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    progressDialog.dismiss()
+                    showSuccessDialog()
+                } else {
+                    progressDialog.dismiss()
+                    showFailureDialog()
+                }
+            }
+    }
+
+    private fun showSuccessDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Success Add Custom Bike To Cart")
+            .setMessage("You can see product on cart page for transaction")
+            .setIcon(R.drawable.ic_baseline_check_circle_outline_24)
+            .setPositiveButton("OK") { dialogInterface, _ ->
+                dialogInterface.dismiss()
+                startActivity(Intent(this, CartActivity::class.java))
+            }
+            .show()
+    }
+
+    private fun showFailureDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Failure Add Custom Bike To Cart")
+            .setMessage("Ups there problem with your internet connection, please try again later!")
+            .setIcon(R.drawable.ic_baseline_clear_24)
+            .setPositiveButton("OK") { dialogInterface, _ ->
+                dialogInterface.dismiss()
+            }
+            .show()
     }
 
     private fun initBikeType() {
@@ -1360,36 +1472,36 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             } else {
                 pb.visibility = View.VISIBLE
 
-                    val myUid = FirebaseAuth.getInstance().currentUser!!.uid
-                    val uid = System.currentTimeMillis().toString()
+                val myUid = FirebaseAuth.getInstance().currentUser!!.uid
+                val uid = System.currentTimeMillis().toString()
 
-                    val data = mapOf(
-                        "uid" to uid,
-                        "userId" to myUid,
-                        "totalPrice" to totalPriceCustomBike,
-                        "saveName" to name,
-                        "bikeType" to bikeType,
-                        "customSparePartList" to customSparePartList,
-                        "isAssembled" to isAssembled
-                    )
+                val data = mapOf(
+                    "uid" to uid,
+                    "userId" to myUid,
+                    "totalPrice" to totalPriceCustomBike,
+                    "saveName" to name,
+                    "bikeType" to bikeType,
+                    "customSparePartList" to customSparePartList,
+                    "isAssembled" to isAssembled
+                )
 
-                    FirebaseFirestore
-                        .getInstance()
-                        .collection("custom_save_data")
-                        .document(uid)
-                        .set(data)
-                        .addOnCompleteListener {
-                            pb.visibility = View.GONE
-                            if (it.isSuccessful) {
-                                dialog.dismiss()
-                                Toast.makeText(this, "Success save custom bike!", Toast.LENGTH_SHORT)
-                                    .show()
-                            } else {
-                                dialog.dismiss()
-                                Toast.makeText(this, "Failure save custom bike!", Toast.LENGTH_SHORT)
-                                    .show()
-                            }
+                FirebaseFirestore
+                    .getInstance()
+                    .collection("custom_save_data")
+                    .document(uid)
+                    .set(data)
+                    .addOnCompleteListener {
+                        pb.visibility = View.GONE
+                        if (it.isSuccessful) {
+                            dialog.dismiss()
+                            Toast.makeText(this, "Success save custom bike!", Toast.LENGTH_SHORT)
+                                .show()
+                        } else {
+                            dialog.dismiss()
+                            Toast.makeText(this, "Failure save custom bike!", Toast.LENGTH_SHORT)
+                                .show()
                         }
+                    }
             }
         }
 
@@ -1602,64 +1714,84 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             val spinnerPosition: Int = adapter.getPosition(model?.customSparePartList?.get(0)?.name)
             binding?.brakeSp?.setSelection(spinnerPosition)
 
-            val spinnerPosition2: Int = adapter2.getPosition(model?.customSparePartList?.get(1)?.name)
+            val spinnerPosition2: Int =
+                adapter2.getPosition(model?.customSparePartList?.get(1)?.name)
             binding?.brakeLeversSp?.setSelection(spinnerPosition2)
 
-            val spinnerPosition3: Int = adapter3.getPosition(model?.customSparePartList?.get(2)?.name)
+            val spinnerPosition3: Int =
+                adapter3.getPosition(model?.customSparePartList?.get(2)?.name)
             binding?.chainringSp?.setSelection(spinnerPosition3)
 
-            val spinnerPosition4: Int = adapter4.getPosition(model?.customSparePartList?.get(3)?.name)
+            val spinnerPosition4: Int =
+                adapter4.getPosition(model?.customSparePartList?.get(3)?.name)
             binding?.chainSp?.setSelection(spinnerPosition4)
 
-            val spinnerPosition5: Int = adapter5.getPosition(model?.customSparePartList?.get(4)?.name)
+            val spinnerPosition5: Int =
+                adapter5.getPosition(model?.customSparePartList?.get(4)?.name)
             binding?.crancksSp?.setSelection(spinnerPosition5)
 
-            val spinnerPosition6: Int = adapter6.getPosition(model?.customSparePartList?.get(5)?.name)
+            val spinnerPosition6: Int =
+                adapter6.getPosition(model?.customSparePartList?.get(5)?.name)
             binding?.derailleurSp?.setSelection(spinnerPosition6)
 
-            val spinnerPosition7: Int = adapter7.getPosition(model?.customSparePartList?.get(6)?.name)
+            val spinnerPosition7: Int =
+                adapter7.getPosition(model?.customSparePartList?.get(6)?.name)
             binding?.dropOutSp?.setSelection(spinnerPosition7)
 
-            val spinnerPosition8: Int = adapter8.getPosition(model?.customSparePartList?.get(7)?.name)
+            val spinnerPosition8: Int =
+                adapter8.getPosition(model?.customSparePartList?.get(7)?.name)
             binding?.frameSp?.setSelection(spinnerPosition8)
 
-            val spinnerPosition9: Int = adapter9.getPosition(model?.customSparePartList?.get(8)?.name)
+            val spinnerPosition9: Int =
+                adapter9.getPosition(model?.customSparePartList?.get(8)?.name)
             binding?.forkSp?.setSelection(spinnerPosition9)
 
-            val spinnerPosition10: Int = adapter10.getPosition(model?.customSparePartList?.get(9)?.name)
+            val spinnerPosition10: Int =
+                adapter10.getPosition(model?.customSparePartList?.get(9)?.name)
             binding?.handleGripSp?.setSelection(spinnerPosition10)
 
-            val spinnerPosition11: Int = adapter11.getPosition(model?.customSparePartList?.get(10)?.name)
+            val spinnerPosition11: Int =
+                adapter11.getPosition(model?.customSparePartList?.get(10)?.name)
             binding?.handleStemSp?.setSelection(spinnerPosition11)
 
-            val spinnerPosition12: Int = adapter12.getPosition(model?.customSparePartList?.get(11)?.name)
+            val spinnerPosition12: Int =
+                adapter12.getPosition(model?.customSparePartList?.get(11)?.name)
             binding?.handleBarSp?.setSelection(spinnerPosition12)
 
-            val spinnerPosition13: Int = adapter13.getPosition(model?.customSparePartList?.get(12)?.name)
+            val spinnerPosition13: Int =
+                adapter13.getPosition(model?.customSparePartList?.get(12)?.name)
             binding?.headSetSp?.setSelection(spinnerPosition13)
 
-            val spinnerPosition14: Int = adapter14.getPosition(model?.customSparePartList?.get(13)?.name)
+            val spinnerPosition14: Int =
+                adapter14.getPosition(model?.customSparePartList?.get(13)?.name)
             binding?.hubSp?.setSelection(spinnerPosition14)
 
-            val spinnerPosition15: Int = adapter15.getPosition(model?.customSparePartList?.get(14)?.name)
+            val spinnerPosition15: Int =
+                adapter15.getPosition(model?.customSparePartList?.get(14)?.name)
             binding?.hydrolinesSp?.setSelection(spinnerPosition15)
 
-            val spinnerPosition16: Int = adapter16.getPosition(model?.customSparePartList?.get(15)?.name)
+            val spinnerPosition16: Int =
+                adapter16.getPosition(model?.customSparePartList?.get(15)?.name)
             binding?.pedalsSp?.setSelection(spinnerPosition16)
 
-            val spinnerPosition17: Int = adapter17.getPosition(model?.customSparePartList?.get(16)?.name)
+            val spinnerPosition17: Int =
+                adapter17.getPosition(model?.customSparePartList?.get(16)?.name)
             binding?.rotorSp?.setSelection(spinnerPosition17)
 
-            val spinnerPosition18: Int = adapter18.getPosition(model?.customSparePartList?.get(17)?.name)
+            val spinnerPosition18: Int =
+                adapter18.getPosition(model?.customSparePartList?.get(17)?.name)
             binding?.shockSp?.setSelection(spinnerPosition18)
 
-            val spinnerPosition19: Int = adapter19.getPosition(model?.customSparePartList?.get(18)?.name)
+            val spinnerPosition19: Int =
+                adapter19.getPosition(model?.customSparePartList?.get(18)?.name)
             binding?.saddleSp?.setSelection(spinnerPosition19)
 
-            val spinnerPosition20: Int = adapter20.getPosition(model?.customSparePartList?.get(19)?.name)
+            val spinnerPosition20: Int =
+                adapter20.getPosition(model?.customSparePartList?.get(19)?.name)
             binding?.seatPostSp?.setSelection(spinnerPosition20)
 
-            val spinnerPosition21: Int = adapter21.getPosition(model?.customSparePartList?.get(21)?.name)
+            val spinnerPosition21: Int =
+                adapter21.getPosition(model?.customSparePartList?.get(21)?.name)
             binding?.wheelSetSp?.setSelection(spinnerPosition21)
 
 

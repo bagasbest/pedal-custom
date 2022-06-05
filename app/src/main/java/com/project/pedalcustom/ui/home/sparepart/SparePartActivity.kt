@@ -12,7 +12,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.project.pedalcustom.R
+import com.project.pedalcustom.authentication.LoginActivity
 import com.project.pedalcustom.databinding.ActivitySparepartBinding
+import com.project.pedalcustom.ui.home.cart.CartActivity
 
 class SparePartActivity : AppCompatActivity() {
     private var binding : ActivitySparepartBinding? = null
@@ -40,6 +42,14 @@ class SparePartActivity : AppCompatActivity() {
         binding?.backButton?.setOnClickListener { onBackPressed() }
         binding?.addSparePartBtn?.setOnClickListener {
             startActivity(Intent(this, SparePartAddActivity::class.java))
+        }
+
+        binding?.cartBtn?.setOnClickListener {
+            if(user != null) {
+                startActivity(Intent(this, CartActivity::class.java))
+            } else {
+                startActivity(Intent(this, LoginActivity::class.java))
+            }
         }
 
     }

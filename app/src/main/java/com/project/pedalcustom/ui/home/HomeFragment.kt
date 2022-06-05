@@ -25,6 +25,7 @@ import com.project.pedalcustom.databinding.FragmentHomeBinding
 import com.project.pedalcustom.ui.home.accessories.AccessoriesActivity
 import com.project.pedalcustom.ui.home.bike_custom.CustomActivity
 import com.project.pedalcustom.ui.home.bikes.BikesActivity
+import com.project.pedalcustom.ui.home.cart.CartActivity
 import com.project.pedalcustom.ui.home.profile.ProfileActivity
 import com.project.pedalcustom.ui.home.sparepart.SparePartActivity
 import com.project.pedalcustom.utils.User
@@ -159,6 +160,14 @@ class HomeFragment : Fragment() {
                     .galleryOnly()
                     .compress(1024)
                     .start(REQUEST_IMAGE_GALLERY)
+            }
+        }
+
+        binding.cartBtn.setOnClickListener {
+            if(user != null) {
+                startActivity(Intent(activity, CartActivity::class.java))
+            } else {
+                startActivity(Intent(activity, LoginActivity::class.java))
             }
         }
     }

@@ -92,13 +92,15 @@
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:background="@drawable/bg_rounded_rv"
             android:backgroundTint="@color/white"
-            app:layout_constraintBottom_toTopOf="@+id/textInputLayout2"
+            app:layout_constraintBottom_toTopOf="@+id/progressBar"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/sliderImage">
 
             <LinearLayout
@@ -256,15 +258,58 @@
                     android:id="@+id/specification"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Spec"
                     android:layout_marginBottom="30dp"
+                    android:text="Spec"
                     android:textColor="@color/black" />
-
 
 
             </LinearLayout>
 
         </ScrollView>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayout2"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            app:layout_constraintBottom_toBottomOf="@+id/textView2"
+            app:layout_constraintStart_toEndOf="@+id/textView2"
+            app:layout_constraintTop_toTopOf="@+id/textView2">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/qty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:background="@color/white"
+                android:hint="qty" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/textInputLayout2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/addToCartBtn"
+            android:layout_width="120dp"
+            android:layout_marginEnd="16dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_rounded_btn"
+            android:backgroundTint="@android:color/holo_red_light"
+            android:paddingHorizontal="10dp"
+            android:text="Add to Cart"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="@+id/textInputLayout2"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/textInputLayout2" />
 
 
 
@@ -281,39 +326,6 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayout2"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            app:layout_constraintBottom_toBottomOf="@+id/textView2"
-            app:layout_constraintStart_toEndOf="@+id/textView2"
-            app:layout_constraintTop_toTopOf="@+id/textView2">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/qty"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/white"
-                android:hint="0" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/addToCartBtn"
-            android:layout_width="120dp"
-            android:layout_marginEnd="16dp"
-            android:layout_height="40dp"
-            android:background="@drawable/bg_rounded_btn"
-            android:backgroundTint="@android:color/holo_red_light"
-            android:paddingHorizontal="10dp"
-            android:text="Add to Cart"
-            android:textAllCaps="false"
-            android:textColor="@color/white"
-            app:layout_constraintBottom_toBottomOf="@+id/textInputLayout2"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/textInputLayout2" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -1,27 +1,35 @@
 package com.project.pedalcustom.ui.home.sparepart
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import com.denzcoskun.imageslider.constants.ScaleTypes
 import com.denzcoskun.imageslider.models.SlideModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.project.pedalcustom.R
+import com.project.pedalcustom.authentication.LoginActivity
 import com.project.pedalcustom.databinding.ActivitySparePartDetailBinding
+import com.project.pedalcustom.ui.home.bike_custom.CustomSparePartModel
+import com.project.pedalcustom.ui.home.cart.CartActivity
+import com.toptoche.searchablespinnerlibrary.SearchableSpinner
 import java.text.DecimalFormat
 
 class SparePartDetailActivity : AppCompatActivity() {
     private var binding : ActivitySparePartDetailBinding? = null
     private var model: SparePartModel? = null
-    private var uid = ""
+    private var user : FirebaseUser? = null
+    private var listColor = ArrayList<String>()
 
-
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySparePartDetailBinding.inflate(layoutInflater)
@@ -29,6 +37,8 @@ class SparePartDetailActivity : AppCompatActivity() {
 
 
         model = intent.getParcelableExtra(EXTRA_DATA)
+        user = FirebaseAuth.getInstance().currentUser
+
         initSlider()
         getSparePartColor()
         checkRole()
@@ -49,8 +59,20 @@ class SparePartDetailActivity : AppCompatActivity() {
             onBackPressed()
         }
 
-        binding?.addToCartBtn?.setOnClickListener {
+        binding?.cartBtn?.setOnClickListener {
+            if(user != null) {
+                startActivity(Intent(this, CartActivity::class.java))
+            } else {
+                startActivity(Intent(this, LoginActivity::class.java))
+            }
+        }
 
+        binding?.addToCartBtn?.setOnClickListener {
+            if(user != null) {
+                formValidation()
+            } else {
+                startActivity(Intent(this, LoginActivity::class.java))
+            }
         }
 
         binding?.edit?.setOnClickListener {
@@ -62,8 +84,142 @@ class SparePartDetailActivity : AppCompatActivity() {
         binding?.delete?.setOnClickListener {
             showDeleteDialog()
         }
+    }
+
+    private fun formValidation() {
+        val qty = binding?.qty?.text.toString().trim()
+
+        if (qty.isEmpty()) {
+            Toast.makeText(this, "Minimum 1 qty product filled!", Toast.LENGTH_SHORT).show()
+        } else if (qty.toInt() <= 0) {
+            Toast.makeText(this, "Minimum 1 qty product filled!", Toast.LENGTH_SHORT).show()
+        } else {
+
+            if(listColor.size > 1) {
+                showPopupColorProductPicker(qty.toLong())
+            } else {
+                binding?.progressBar?.visibility = View.VISIBLE
+
+                val cartId = System.currentTimeMillis().toString()
+                val totalPrice = qty.toLong().times(model?.price!!)
+                val customSparePartList = ArrayList<CustomSparePartModel>()
+                val data = mapOf(
+                    "uid" to cartId,
+                    "userId" to user?.uid,
+                    "name" to model?.name,
+                    "totalPrice" to totalPrice,
+                    "customSparePartList" to customSparePartList,
+                    "isAssembled" to false,
+                    "category" to "spare part",
+                    "type" to model?.type,
+                    "color" to model?.color,
+                    "image" to model?.image!![0],
+                    "qty" to qty.toLong(),
+                )
+
+                FirebaseFirestore
+                    .getInstance()
+                    .collection("cart")
+                    .document(cartId)
+                    .set(data)
+                    .addOnCompleteListener {
+                        binding?.progressBar?.visibility = View.GONE
+                        if (it.isSuccessful) {
+                            showSuccessDialog()
+                        } else {
+                            showFailureDialog()
+                        }
+                    }
+            }
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun showPopupColorProductPicker(qty: Long) {
+        val spinner: SearchableSpinner
+        val saveBtn: Button
+        val title: TextView
+        val discardBtn: Button
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.popup_color_product)
+
+        spinner = dialog.findViewById(R.id.spinner)
+        title = dialog.findViewById(R.id.editText)
+        saveBtn = dialog.findViewById(R.id.save)
+        discardBtn = dialog.findViewById(R.id.discard)
+
+        title.text = "Choose Spare Part Color"
 
 
+        val adapter = ArrayAdapter(this, android.R.layout.simple_expandable_list_item_1, listColor)
+        spinner?.adapter = adapter
+
+        discardBtn.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        saveBtn.setOnClickListener {
+            dialog.dismiss()
+
+            binding?.progressBar?.visibility = View.VISIBLE
+
+            val cartId = System.currentTimeMillis().toString()
+            val totalPrice = qty.times(model?.price!!)
+            val customSparePartList = ArrayList<CustomSparePartModel>()
+            val data = mapOf(
+                "uid" to cartId,
+                "userId" to user?.uid,
+                "name" to model?.name,
+                "totalPrice" to totalPrice,
+                "type" to model?.type,
+                "customSparePartList" to customSparePartList,
+                "isAssembled" to false,
+                "category" to "spare part",
+                "color" to spinner?.selectedItem.toString(),
+                "image" to model?.image!![0],
+                "qty" to qty,
+            )
+
+            FirebaseFirestore
+                .getInstance()
+                .collection("cart")
+                .document(cartId)
+                .set(data)
+                .addOnCompleteListener {
+                    binding?.progressBar?.visibility = View.GONE
+                    if (it.isSuccessful) {
+                        showSuccessDialog()
+                    } else {
+                        showFailureDialog()
+                    }
+                }
+        }
+
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.show()
+    }
+
+    private fun showSuccessDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Success Add Spare Part To Cart")
+            .setMessage("You can see product on cart page for transaction")
+            .setIcon(R.drawable.ic_baseline_check_circle_outline_24)
+            .setPositiveButton("OK") { dialogInterface, _ ->
+                dialogInterface.dismiss()
+                startActivity(Intent(this, CartActivity::class.java))
+            }
+            .show()
+    }
+
+    private fun showFailureDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Failure Add Spare Part To Cart")
+            .setMessage("Ups there problem with your internet connection, please try again later!")
+            .setIcon(R.drawable.ic_baseline_clear_24)
+            .setPositiveButton("OK") { dialogInterface, _ ->
+                dialogInterface.dismiss()
+            }
+            .show()
     }
 
     private fun showDeleteDialog() {
@@ -111,11 +267,10 @@ class SparePartDetailActivity : AppCompatActivity() {
 
     private fun checkRole() {
         if(FirebaseAuth.getInstance().currentUser != null) {
-            uid = FirebaseAuth.getInstance().currentUser!!.uid
             FirebaseFirestore
                 .getInstance()
                 .collection("users")
-                .document(uid)
+                .document(user?.uid!!)
                 .get()
                 .addOnSuccessListener {
                     val role = "" + it.data!!["role"]

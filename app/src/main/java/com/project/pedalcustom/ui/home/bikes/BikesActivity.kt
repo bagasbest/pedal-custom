@@ -12,7 +12,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.project.pedalcustom.R
+import com.project.pedalcustom.authentication.LoginActivity
 import com.project.pedalcustom.databinding.ActivityBikesBinding
+import com.project.pedalcustom.ui.home.cart.CartActivity
 
 class BikesActivity : AppCompatActivity() {
 
@@ -44,6 +46,14 @@ class BikesActivity : AppCompatActivity() {
         binding?.backButton?.setOnClickListener { onBackPressed() }
         binding?.addBikeBtn?.setOnClickListener {
             startActivity(Intent(this, BikesAddActivity::class.java))
+        }
+
+        binding?.cartBtn?.setOnClickListener {
+            if(user != null) {
+                startActivity(Intent(this, CartActivity::class.java))
+            } else {
+                startActivity(Intent(this, LoginActivity::class.java))
+            }
         }
 
     }

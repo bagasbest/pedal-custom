@@ -5,14 +5,14 @@ import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.project.pedalcustom.R
@@ -23,7 +23,6 @@ import com.project.pedalcustom.ui.home.sparepart.SparePartModel
 import com.project.pedalcustom.ui.home.sparepart.SparePartViewModel
 import com.project.pedalcustom.utils.IFirebaseLoadDone
 import java.text.DecimalFormat
-import kotlin.collections.ArrayList
 
 class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
 
@@ -35,57 +34,10 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
     private var isAssembled = false
     private var totalPriceCustomBike = 0L
     private val formatter = DecimalFormat("#,###")
-    private var model : LoadBikeModel ? = null
+    private var model: LoadBikeModel? = null
     private var option = ""
 
-    /// spare part price
-    private var brakePrice = 0L
-    private var brakeLeversPrice = 0L
-    private var chainRingPrice = 0L
-    private var chainPrice = 0L
-    private var crankPrice = 0L
-    private var derailleurPrice = 0L
-    private var dropOutPrice = 0L
-    private var framePrice = 0L
-    private var forkPrice = 0L
-    private var handleGripPrice = 0L
-    private var handleStemPrice = 0L
-    private var handleBarPrice = 0L
-    private var headSetPrice = 0L
-    private var hubPrice = 0L
-    private var hydrolinesPrice = 0L
-    private var pedalPrice = 0L
-    private var rotorPrice = 0L
-    private var shockPrice = 0L
-    private var saddlePrice = 0L
-    private var seatPostPrice = 0L
-    private var wheelSetPrice = 0L
-
-
-    /// spare part id
-    private var brakeId = ""
-    private var brakeLeversId = ""
-    private var chainRingId = ""
-    private var chainId = ""
-    private var crankId = ""
-    private var derailleurId = ""
-    private var dropOutId = ""
-    private var frameId = ""
-    private var forkId = ""
-    private var handleGripId = ""
-    private var handleStemId = ""
-    private var handleBarId = ""
-    private var headSetId = ""
-    private var hubId = ""
-    private var hydrolinesId = ""
-    private var pedalId = ""
-    private var rotorId = ""
-    private var shockId = ""
-    private var saddleId = ""
-    private var seatPostId = ""
-    private var wheelSetId = ""
-
-
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCustomeBinding.inflate(layoutInflater)
@@ -93,11 +45,20 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
 
         iFirebaseLoadDone = this
         option = intent.getStringExtra(OPTION).toString()
-        if(option == "create") {
-            initialCapacityList()
-        } else {
+        initialCapacityList()
+
+        if (option == "load") {
             model = intent.getParcelableExtra(EXTRA_DATA)
             bikeType = model?.bikeType.toString()
+            isAssembled = model?.isAssembled == true
+            if (isAssembled) {
+                binding?.assembled?.isChecked = true
+            } else {
+                binding?.notAssembled?.isChecked = true
+            }
+
+            totalPriceCustomBike = model?.totalPrice!!
+            binding?.totalPrice?.text = "Total:\nRp${formatter.format(model?.totalPrice)}"
         }
         initBikeType()
 
@@ -107,7 +68,34 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
 
         binding?.saveBtn?.setOnClickListener {
             if (bikeType != "") {
-                saveCustomBikeToDatabase()
+                if(option == "create") {
+                    saveCustomBikeToDatabase()
+                } else {
+                    binding?.saveBtn?.isEnabled = false
+                    val data = mapOf(
+                        "totalPrice" to totalPriceCustomBike,
+                        "saveName" to model?.saveName,
+                        "bikeType" to bikeType,
+                        "customSparePartList" to customSparePartList,
+                        "isAssembled" to isAssembled
+                    )
+
+                    FirebaseFirestore
+                        .getInstance()
+                        .collection("custom_save_data")
+                        .document(model?.uid!!)
+                        .update(data)
+                        .addOnCompleteListener {
+                            binding?.saveBtn?.isEnabled = true
+                            if (it.isSuccessful) {
+                                Toast.makeText(this, "Success overwrite custom bike!", Toast.LENGTH_SHORT)
+                                    .show()
+                            } else {
+                                Toast.makeText(this, "Failure overwrite custom bike!", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        }
+                }
             } else {
                 Toast.makeText(
                     this,
@@ -129,6 +117,196 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             startActivity(Intent(this, LoadBikeActivity::class.java))
         }
 
+        binding?.brakeSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.brakeQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.brakeLeversSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.brakeLeversQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.chainringSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.chainringQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.chainSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.chainQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.crancksSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.cranksQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.derailleurSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.derailleurQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.dropOutSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.dropOutQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.frameSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.frameQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.forkSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.forkQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.handleGripSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.handleGripQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.handleStemSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.handleStemQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+
+        binding?.handleBarSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.handleBarQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.headSetSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.headSetQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.hubSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.hubQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.hydrolinesSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.hydrolinesQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.pedalsSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.pedalsQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.rotorSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.rotorQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.shockSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.shockQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.saddleSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.saddleQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.seatPostSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.seatPostQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
+        binding?.wheelSetSp?.onItemSelectedListener = (object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                binding?.wheelSetQty?.setText("")
+            }
+
+            override fun onNothingSelected(p0: AdapterView<*>?) {
+            }
+        })
+
         binding?.brakeQty?.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
 
@@ -139,20 +317,35 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.brakeSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.brakePrice?.setText(price.toString())
-                    val name = binding?.brakeSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, brakeId, 0, 0)
+                    binding?.brakePrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[0] = model
                     showPriceTotal()
 
                 } else {
-                    price = brakePrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.brakePrice?.setText(price.toString())
-                    val name = binding?.brakeSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, brakeId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[0] = model
                     showPriceTotal()
                 }
@@ -171,19 +364,34 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.brakeLeversSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.brakeLeversPrice?.setText(price.toString())
-                    val name = binding?.brakeLeversSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, brakeLeversId, 0, 0)
+                    binding?.brakeLeversPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[1] = model
                     showPriceTotal()
+
                 } else {
-                    price = brakeLeversPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.brakeLeversPrice?.setText(price.toString())
-                    val name = binding?.brakeLeversSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, brakeLeversId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[1] = model
                     showPriceTotal()
                 }
@@ -203,25 +411,38 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.chainringSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.chainringPrice?.setText(price.toString())
-                    val name = binding?.chainringSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, chainRingId, 0, 0)
+                    binding?.chainringPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[2] = model
                     showPriceTotal()
+
                 } else {
-                    price = chainPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.chainringPrice?.setText(price.toString())
-                    val name = binding?.chainringSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, chainRingId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[2] = model
                     showPriceTotal()
                 }
-
             }
-
         })
 
 
@@ -235,19 +456,34 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.chainSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.chainPrice?.setText(price.toString())
-                    val name = binding?.chainSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, chainId, 0, 0)
+                    binding?.chainPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[3] = model
                     showPriceTotal()
+
                 } else {
-                    price = chainPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.chainPrice?.setText(price.toString())
-                    val name = binding?.chainSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, chainId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[3] = model
                     showPriceTotal()
                 }
@@ -265,19 +501,34 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.crancksSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.cranksPrice?.setText(price.toString())
-                    val name = binding?.crancksSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, crankId, 0, 0)
-                    customSparePartList[4] = model
+                    binding?.cranksPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
+                    customSparePartList[3] = model
                     showPriceTotal()
+
                 } else {
-                    price = crankPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.cranksPrice?.setText(price.toString())
-                    val name = binding?.crancksSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, crankId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[4] = model
                     showPriceTotal()
                 }
@@ -297,19 +548,34 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.derailleurSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.derailleurPrice?.setText(price.toString())
-                    val name = binding?.derailleurSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, derailleurId, 0, 0)
+                    binding?.derailleurPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[5] = model
                     showPriceTotal()
+
                 } else {
-                    price = derailleurPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.derailleurPrice?.setText(price.toString())
-                    val name = binding?.derailleurSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, derailleurId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[5] = model
                     showPriceTotal()
                 }
@@ -329,19 +595,34 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.dropOutSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.dropOutPrice?.setText(price.toString())
-                    val name = binding?.dropOutSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, dropOutId, 0, 0)
+                    binding?.dropOutPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[6] = model
                     showPriceTotal()
+
                 } else {
-                    price = dropOutPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.dropOutPrice?.setText(price.toString())
-                    val name = binding?.dropOutSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, dropOutId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[6] = model
                     showPriceTotal()
                 }
@@ -360,23 +641,37 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.frameSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.framePrice?.setText(price.toString())
-                    val name = binding?.frameSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, frameId, 0, 0)
+                    binding?.framePrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[7] = model
                     showPriceTotal()
+
                 } else {
-                    price = framePrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.framePrice?.setText(price.toString())
-                    val name = binding?.frameSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, frameId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[7] = model
                     showPriceTotal()
                 }
-
             }
 
         })
@@ -391,25 +686,37 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.forkSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.forkPrice?.setText(price.toString())
-                    val name = binding?.forkSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, forkId, 0, 0)
-                    customSparePartList.add(8, model)
+                    binding?.forkPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[8] = model
                     showPriceTotal()
+
                 } else {
-                    price = forkPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.forkPrice?.setText(price.toString())
-                    val name = binding?.forkSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, forkId, p0.toString().toInt(), price)
-                    customSparePartList.add(8, model)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[8] = model
                     showPriceTotal()
                 }
-
             }
 
         })
@@ -424,19 +731,34 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.handleGripSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.handleGripPrice?.setText(price.toString())
-                    val name = binding?.handleGripSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, handleGripId, 0, 0)
+                    binding?.handleGripPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[9] = model
                     showPriceTotal()
+
                 } else {
-                    price = handleGripPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.handleGripPrice?.setText(price.toString())
-                    val name = binding?.handleGripSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, handleGripId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[9] = model
                     showPriceTotal()
                 }
@@ -455,23 +777,37 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.handleStemSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.handleStemPrice?.setText(price.toString())
-                    val name = binding?.handleStemSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, handleStemId, 0, 0)
+                    binding?.handleStemPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[10] = model
                     showPriceTotal()
+
                 } else {
-                    price = handleStemPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.handleStemPrice?.setText(price.toString())
-                    val name = binding?.handleStemSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, handleStemId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[10] = model
                     showPriceTotal()
                 }
-
             }
 
         })
@@ -486,19 +822,34 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.handleBarSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.handleBarPrice?.setText(price.toString())
-                    val name = binding?.handleBarSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, handleBarId, 0, 0)
+                    binding?.handleBarPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[11] = model
                     showPriceTotal()
+
                 } else {
-                    price = handleBarPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.handleBarPrice?.setText(price.toString())
-                    val name = binding?.handleBarSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, handleBarId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[11] = model
                     showPriceTotal()
                 }
@@ -517,19 +868,34 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.headSetSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.headSetPrice?.setText(price.toString())
-                    val name = binding?.headSetSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, handleStemId, 0, 0)
+                    binding?.headSetPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[12] = model
                     showPriceTotal()
+
                 } else {
-                    price = headSetPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.headSetPrice?.setText(price.toString())
-                    val name = binding?.headSetSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, handleStemId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[12] = model
                     showPriceTotal()
                 }
@@ -548,19 +914,34 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.hubSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.hubPrice?.setText(price.toString())
-                    val name = binding?.hubSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, hubId, 0, 0)
+                    binding?.hubPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[13] = model
                     showPriceTotal()
+
                 } else {
-                    price = hubPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.hubPrice?.setText(price.toString())
-                    val name = binding?.hubSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, hubId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[13] = model
                     showPriceTotal()
                 }
@@ -579,19 +960,34 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.hydrolinesSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.hydrolinesPrice?.setText(price.toString())
-                    val name = binding?.hydrolinesSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, hydrolinesId, 0, 0)
+                    binding?.hydrolinesPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[14] = model
                     showPriceTotal()
+
                 } else {
-                    price = hydrolinesPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.hydrolinesPrice?.setText(price.toString())
-                    val name = binding?.hydrolinesSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, hydrolinesId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[14] = model
                     showPriceTotal()
                 }
@@ -610,22 +1006,38 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.pedalsSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.pedalsPrice?.setText(price.toString())
-                    val name = binding?.pedalsSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, pedalId, 0, 0)
+                    binding?.pedalsPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[15] = model
                     showPriceTotal()
+
                 } else {
-                    price = pedalPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.pedalsPrice?.setText(price.toString())
-                    val name = binding?.pedalsSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, pedalId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[15] = model
                     showPriceTotal()
                 }
+
 
             }
 
@@ -641,19 +1053,34 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.rotorSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.rotorPrice?.setText(price.toString())
-                    val name = binding?.rotorSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, rotorId,0, 0)
+                    binding?.rotorPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[16] = model
                     showPriceTotal()
+
                 } else {
-                    price = rotorPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.rotorPrice?.setText(price.toString())
-                    val name = binding?.rotorSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, rotorId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[16] = model
                     showPriceTotal()
                 }
@@ -673,19 +1100,34 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.shockSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.shockPrice?.setText(price.toString())
-                    val name = binding?.shockSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, shockId, 0, 0)
+                    binding?.shockPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[17] = model
                     showPriceTotal()
+
                 } else {
-                    price = shockPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.shockPrice?.setText(price.toString())
-                    val name = binding?.shockSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, shockId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[17] = model
                     showPriceTotal()
                 }
@@ -706,22 +1148,38 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.saddleSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.saddlePrice?.setText(price.toString())
-                    val name = binding?.saddleSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, saddleId, 0, 0)
+                    binding?.saddlePrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[18] = model
                     showPriceTotal()
+
                 } else {
-                    price = saddlePrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.saddlePrice?.setText(price.toString())
-                    val name = binding?.saddleSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, saddleId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[18] = model
                     showPriceTotal()
                 }
+
 
             }
 
@@ -737,19 +1195,34 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.seatPostSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.seatPostPrice?.setText(price.toString())
-                    val name = binding?.seatPostSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, seatPostId, 0, 0)
+                    binding?.seatPostPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[19] = model
                     showPriceTotal()
+
                 } else {
-                    price = seatPostPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.seatPostPrice?.setText(price.toString())
-                    val name = binding?.seatPostSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, seatPostId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[19] = model
                     showPriceTotal()
                 }
@@ -769,22 +1242,38 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                val price: Long
+                val name = binding?.wheelSetSp?.selectedItem.toString()
+                var price = 0L
+                var productId = ""
+
+                for(i in sparePartList.indices) {
+                    if(sparePartList[i].name == name) {
+                        price = sparePartList[i].price!!
+                        productId = sparePartList[i].uid!!
+
+                        break
+                    }
+                }
+
                 if (p0.toString().isEmpty()) {
-                    price = 0L
-                    binding?.wheelSetPrice?.setText(price.toString())
-                    val name = binding?.wheelSetSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, wheelSetId, 0, 0)
+                    binding?.wheelSetPrice?.setText("0")
+                    val model = CustomSparePartModel(name, productId, 0, 0)
                     customSparePartList[20] = model
                     showPriceTotal()
+
                 } else {
-                    price = wheelSetPrice * p0.toString().toInt()
+                    price *= p0.toString().toInt()
                     binding?.wheelSetPrice?.setText(price.toString())
-                    val name = binding?.wheelSetSp?.selectedItem.toString()
-                    val model = CustomSparePartModel(name, wheelSetId, p0.toString().toInt(), price)
+                    val model = CustomSparePartModel(
+                        name,
+                        productId,
+                        p0.toString().toInt(),
+                        price
+                    )
                     customSparePartList[20] = model
                     showPriceTotal()
                 }
+
 
             }
 
@@ -792,10 +1281,10 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
     }
 
     private fun initBikeType() {
-        if(option == "create") {
+        if (option == "create") {
             bikeType = intent.getStringExtra(BIKE_TYPE).toString()
         }
-        if(bikeType != "null") {
+        if (bikeType != "null") {
 
             when (bikeType) {
                 "MTB" -> {
@@ -812,6 +1301,12 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
                 }
                 "Any" -> {
                     binding?.any?.isChecked = true
+                }
+            }
+
+            if (option == "load") {
+                for (i in 0..binding?.radioGroup2?.childCount!!) {
+                    binding?.radioGroup2?.getChildAt(i)?.isEnabled = false
                 }
             }
 
@@ -835,7 +1330,7 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             totalPriceCustomBike += customSparePartList[i].price!!
         }
 
-        if(isAssembled) {
+        if (isAssembled) {
             totalPriceCustomBike += 100000
         }
         binding?.totalPrice?.text = "Total:\nRp.${formatter.format(totalPriceCustomBike)}"
@@ -865,36 +1360,36 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             } else {
                 pb.visibility = View.VISIBLE
 
-                val myUid = FirebaseAuth.getInstance().currentUser!!.uid
-                val uid = System.currentTimeMillis().toString()
+                    val myUid = FirebaseAuth.getInstance().currentUser!!.uid
+                    val uid = System.currentTimeMillis().toString()
 
-                val data = mapOf(
-                    "uid" to uid,
-                    "userId" to myUid,
-                    "totalPrice" to totalPriceCustomBike,
-                    "saveName" to name,
-                    "bikeType" to bikeType,
-                    "customSparePartList" to customSparePartList,
-                    "isAssembled" to isAssembled
-                )
+                    val data = mapOf(
+                        "uid" to uid,
+                        "userId" to myUid,
+                        "totalPrice" to totalPriceCustomBike,
+                        "saveName" to name,
+                        "bikeType" to bikeType,
+                        "customSparePartList" to customSparePartList,
+                        "isAssembled" to isAssembled
+                    )
 
-                FirebaseFirestore
-                    .getInstance()
-                    .collection("custom_save_data")
-                    .document(uid)
-                    .set(data)
-                    .addOnCompleteListener {
-                        pb.visibility = View.GONE
-                        if (it.isSuccessful) {
-                            dialog.dismiss()
-                            Toast.makeText(this, "Success save custom bike!", Toast.LENGTH_SHORT)
-                                .show()
-                        } else {
-                            dialog.dismiss()
-                            Toast.makeText(this, "Failure save custom bike!", Toast.LENGTH_SHORT)
-                                .show()
+                    FirebaseFirestore
+                        .getInstance()
+                        .collection("custom_save_data")
+                        .document(uid)
+                        .set(data)
+                        .addOnCompleteListener {
+                            pb.visibility = View.GONE
+                            if (it.isSuccessful) {
+                                dialog.dismiss()
+                                Toast.makeText(this, "Success save custom bike!", Toast.LENGTH_SHORT)
+                                    .show()
+                            } else {
+                                dialog.dismiss()
+                                Toast.makeText(this, "Failure save custom bike!", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
                         }
-                    }
             }
         }
 
@@ -943,6 +1438,7 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
 
             val intent = Intent(this, CustomActivity::class.java)
             intent.putExtra(BIKE_TYPE, bikeType)
+            intent.putExtra(OPTION, option)
             startActivity(intent)
             finish()
         }
@@ -953,12 +1449,13 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
 
         viewModel.setListSparePartByBikeType(bikeType)
         viewModel.getSparePart().observe(this) { sparePartList ->
-                iFirebaseLoadDone.onFirebaseLoadSuccess(sparePartList)
+            iFirebaseLoadDone.onFirebaseLoadSuccess(sparePartList)
         }
     }
 
     override fun onFirebaseLoadSuccess(sparePart: List<SparePartModel>) {
         this.sparePartList = sparePart
+
         /// BRAKE
         val sparePartBrake = getPropertyNameList(sparePart, "Brake")
         val adapter =
@@ -1100,6 +1597,138 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             ArrayAdapter(this, android.R.layout.simple_expandable_list_item_1, spareWheelSet)
         binding?.wheelSetSp?.adapter = adapter21
 
+
+        if (option == "load") {
+            val spinnerPosition: Int = adapter.getPosition(model?.customSparePartList?.get(0)?.name)
+            binding?.brakeSp?.setSelection(spinnerPosition)
+
+            val spinnerPosition2: Int = adapter2.getPosition(model?.customSparePartList?.get(1)?.name)
+            binding?.brakeLeversSp?.setSelection(spinnerPosition2)
+
+            val spinnerPosition3: Int = adapter3.getPosition(model?.customSparePartList?.get(2)?.name)
+            binding?.chainringSp?.setSelection(spinnerPosition3)
+
+            val spinnerPosition4: Int = adapter4.getPosition(model?.customSparePartList?.get(3)?.name)
+            binding?.chainSp?.setSelection(spinnerPosition4)
+
+            val spinnerPosition5: Int = adapter5.getPosition(model?.customSparePartList?.get(4)?.name)
+            binding?.crancksSp?.setSelection(spinnerPosition5)
+
+            val spinnerPosition6: Int = adapter6.getPosition(model?.customSparePartList?.get(5)?.name)
+            binding?.derailleurSp?.setSelection(spinnerPosition6)
+
+            val spinnerPosition7: Int = adapter7.getPosition(model?.customSparePartList?.get(6)?.name)
+            binding?.dropOutSp?.setSelection(spinnerPosition7)
+
+            val spinnerPosition8: Int = adapter8.getPosition(model?.customSparePartList?.get(7)?.name)
+            binding?.frameSp?.setSelection(spinnerPosition8)
+
+            val spinnerPosition9: Int = adapter9.getPosition(model?.customSparePartList?.get(8)?.name)
+            binding?.forkSp?.setSelection(spinnerPosition9)
+
+            val spinnerPosition10: Int = adapter10.getPosition(model?.customSparePartList?.get(9)?.name)
+            binding?.handleGripSp?.setSelection(spinnerPosition10)
+
+            val spinnerPosition11: Int = adapter11.getPosition(model?.customSparePartList?.get(10)?.name)
+            binding?.handleStemSp?.setSelection(spinnerPosition11)
+
+            val spinnerPosition12: Int = adapter12.getPosition(model?.customSparePartList?.get(11)?.name)
+            binding?.handleBarSp?.setSelection(spinnerPosition12)
+
+            val spinnerPosition13: Int = adapter13.getPosition(model?.customSparePartList?.get(12)?.name)
+            binding?.headSetSp?.setSelection(spinnerPosition13)
+
+            val spinnerPosition14: Int = adapter14.getPosition(model?.customSparePartList?.get(13)?.name)
+            binding?.hubSp?.setSelection(spinnerPosition14)
+
+            val spinnerPosition15: Int = adapter15.getPosition(model?.customSparePartList?.get(14)?.name)
+            binding?.hydrolinesSp?.setSelection(spinnerPosition15)
+
+            val spinnerPosition16: Int = adapter16.getPosition(model?.customSparePartList?.get(15)?.name)
+            binding?.pedalsSp?.setSelection(spinnerPosition16)
+
+            val spinnerPosition17: Int = adapter17.getPosition(model?.customSparePartList?.get(16)?.name)
+            binding?.rotorSp?.setSelection(spinnerPosition17)
+
+            val spinnerPosition18: Int = adapter18.getPosition(model?.customSparePartList?.get(17)?.name)
+            binding?.shockSp?.setSelection(spinnerPosition18)
+
+            val spinnerPosition19: Int = adapter19.getPosition(model?.customSparePartList?.get(18)?.name)
+            binding?.saddleSp?.setSelection(spinnerPosition19)
+
+            val spinnerPosition20: Int = adapter20.getPosition(model?.customSparePartList?.get(19)?.name)
+            binding?.seatPostSp?.setSelection(spinnerPosition20)
+
+            val spinnerPosition21: Int = adapter21.getPosition(model?.customSparePartList?.get(21)?.name)
+            binding?.wheelSetSp?.setSelection(spinnerPosition21)
+
+
+            Handler().postDelayed({
+                /// INISIASI DATA KEDALAM KOLOM KOLOM
+                binding?.brakeQty?.setText(model?.customSparePartList!![0].qty.toString())
+                binding?.brakePrice?.setText(model?.customSparePartList!![0].price.toString())
+
+                binding?.brakeLeversQty?.setText(model?.customSparePartList!![1].qty.toString())
+                binding?.brakeLeversPrice?.setText(model?.customSparePartList!![1].price.toString())
+
+                binding?.chainringQty?.setText(model?.customSparePartList!![2].qty.toString())
+                binding?.chainringPrice?.setText(model?.customSparePartList!![2].price.toString())
+
+                binding?.chainQty?.setText(model?.customSparePartList!![3].qty.toString())
+                binding?.chainPrice?.setText(model?.customSparePartList!![3].price.toString())
+
+                binding?.cranksQty?.setText(model?.customSparePartList!![4].qty.toString())
+                binding?.cranksPrice?.setText(model?.customSparePartList!![4].price.toString())
+
+                binding?.derailleurQty?.setText(model?.customSparePartList!![5].qty.toString())
+                binding?.derailleurPrice?.setText(model?.customSparePartList!![5].price.toString())
+
+                binding?.dropOutQty?.setText(model?.customSparePartList!![6].qty.toString())
+                binding?.dropOutPrice?.setText(model?.customSparePartList!![6].price.toString())
+
+                binding?.frameQty?.setText(model?.customSparePartList!![7].qty.toString())
+                binding?.framePrice?.setText(model?.customSparePartList!![7].price.toString())
+
+                binding?.forkQty?.setText(model?.customSparePartList!![8].qty.toString())
+                binding?.forkPrice?.setText(model?.customSparePartList!![8].price.toString())
+
+                binding?.handleGripQty?.setText(model?.customSparePartList!![9].qty.toString())
+                binding?.handleGripPrice?.setText(model?.customSparePartList!![9].price.toString())
+
+                binding?.handleStemQty?.setText(model?.customSparePartList!![10].qty.toString())
+                binding?.handleStemPrice?.setText(model?.customSparePartList!![10].price.toString())
+
+                binding?.handleBarQty?.setText(model?.customSparePartList!![11].qty.toString())
+                binding?.handleBarPrice?.setText(model?.customSparePartList!![11].price.toString())
+
+                binding?.headSetQty?.setText(model?.customSparePartList!![12].qty.toString())
+                binding?.headSetPrice?.setText(model?.customSparePartList!![12].price.toString())
+
+                binding?.hubQty?.setText(model?.customSparePartList!![13].qty.toString())
+                binding?.hubPrice?.setText(model?.customSparePartList!![13].price.toString())
+
+                binding?.hydrolinesQty?.setText(model?.customSparePartList!![14].qty.toString())
+                binding?.hydrolinesPrice?.setText(model?.customSparePartList!![14].price.toString())
+
+                binding?.pedalsQty?.setText(model?.customSparePartList!![15].qty.toString())
+                binding?.pedalsPrice?.setText(model?.customSparePartList!![15].price.toString())
+
+                binding?.rotorQty?.setText(model?.customSparePartList!![16].qty.toString())
+                binding?.rotorPrice?.setText(model?.customSparePartList!![16].price.toString())
+
+                binding?.shockQty?.setText(model?.customSparePartList!![17].qty.toString())
+                binding?.shockPrice?.setText(model?.customSparePartList!![17].price.toString())
+
+                binding?.saddleQty?.setText(model?.customSparePartList!![18].qty.toString())
+                binding?.saddlePrice?.setText(model?.customSparePartList!![18].price.toString())
+
+                binding?.seatPostQty?.setText(model?.customSparePartList!![19].qty.toString())
+                binding?.seatPostPrice?.setText(model?.customSparePartList!![19].price.toString())
+
+                binding?.wheelSetQty?.setText(model?.customSparePartList!![20].qty.toString())
+                binding?.wheelSetPrice?.setText(model?.customSparePartList!![20].price.toString())
+            }, 500)
+        }
     }
 
     private fun getPropertyNameList(
@@ -1110,111 +1739,6 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
         for (sp in spList) {
             if (sp.type == sparePartType) {
                 result.add(sp.name!!)
-
-                when (sparePartType) {
-                    "Brake" -> {
-                        brakePrice = sp.price!!
-                        brakeId = sp.uid!!
-                    }
-                    "Brake Levers" -> {
-                        brakeLeversPrice = sp.price!!
-                        brakeLeversId = sp.uid!!
-                    }
-                    "Chain Ring" -> {
-                        chainRingPrice = sp.price!!
-                        chainRingId = sp.uid!!
-
-                    }
-                    "Chain" -> {
-                        chainPrice = sp.price!!
-                        chainId = sp.uid!!
-
-                    }
-                    "Cranks" -> {
-                        crankPrice = sp.price!!
-                        crankId = sp.uid!!
-
-                    }
-                    "Derailleur" -> {
-                        derailleurPrice = sp.price!!
-                        derailleurId = sp.uid!!
-
-                    }
-                    "Drop Out" -> {
-                        dropOutPrice = sp.price!!
-                        dropOutId = sp.uid!!
-
-                    }
-                    "Frame" -> {
-                        framePrice = sp.price!!
-                        frameId = sp.uid!!
-
-                    }
-                    "Fork" -> {
-                        forkPrice = sp.price!!
-                        forkId = sp.uid!!
-
-                    }
-                    "Handle Grip" -> {
-                        handleGripPrice = sp.price!!
-                        handleGripId = sp.uid!!
-
-                    }
-                    "Handle Stem" -> {
-                        handleStemPrice = sp.price!!
-                        handleStemId = sp.uid!!
-
-                    }
-                    "Handlebar" -> {
-                        handleBarPrice = sp.price!!
-                        handleBarId = sp.uid!!
-
-                    }
-                    "Headset" -> {
-                        headSetPrice = sp.price!!
-                        headSetId = sp.uid!!
-
-                    }
-                    "Hub" -> {
-                        hubPrice = sp.price!!
-                        hubId = sp.uid!!
-
-                    }
-                    "Hydrolines" -> {
-                        hydrolinesPrice = sp.price!!
-                        hydrolinesId = sp.uid!!
-
-                    }
-                    "Pedals" -> {
-                        pedalPrice = sp.price!!
-                        pedalId = sp.uid!!
-
-                    }
-                    "Rotor" -> {
-                        rotorPrice = sp.price!!
-                        rotorId = sp.uid!!
-
-                    }
-                    "Shock" -> {
-                        shockPrice = sp.price!!
-                        shockId = sp.uid!!
-
-                    }
-                    "Saddle" -> {
-                        saddlePrice = sp.price!!
-                        saddleId = sp.uid!!
-
-                    }
-                    "Seatpost" -> {
-                        seatPostPrice = sp.price!!
-                        seatPostId = sp.uid!!
-
-                    }
-                    "Wheel Set" -> {
-                        wheelSetPrice = sp.price!!
-                        wheelSetId = sp.uid!!
-                    }
-                }
             }
         }
         return result

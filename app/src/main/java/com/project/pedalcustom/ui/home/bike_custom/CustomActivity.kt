@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
@@ -1341,6 +1342,7 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
 
         val data = mapOf(
             "uid" to uid,
+            "productId" to "",
             "name" to "Custom Bike",
             "userId" to userId,
             "totalPrice" to totalPriceCustomBike,

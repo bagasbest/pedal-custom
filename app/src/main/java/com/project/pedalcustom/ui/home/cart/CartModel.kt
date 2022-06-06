@@ -7,6 +7,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class CartModel(
     var uid: String? = null,
+    var productId: String? = null,
     var name: String? = null,
     var userId: String? = null,
     var totalPrice: Long? = 0L,

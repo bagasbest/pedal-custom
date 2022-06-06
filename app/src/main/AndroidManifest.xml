@@ -18,6 +18,9 @@
         android:theme="@style/Theme.PedalCustom"
         tools:targetApi="31">
         <activity
+            android:name=".HomepageAdmin"
+            android:exported="false" />
+        <activity
             android:name=".ui.home.cart.CheckoutActivity"
             android:exported="false" />
         <activity

@@ -105,6 +105,7 @@ class AccessoriesDetailActivity : AppCompatActivity() {
                 val customSparePartList = ArrayList<CustomSparePartModel>()
                 val data = mapOf(
                     "uid" to cartId,
+                    "productId" to model?.uid,
                     "userId" to user?.uid,
                     "name" to model?.name,
                     "totalPrice" to totalPrice,
@@ -140,15 +141,18 @@ class AccessoriesDetailActivity : AppCompatActivity() {
         val saveBtn: Button
         val discardBtn: Button
         val title: TextView
+        val option: TextView
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.popup_color_product)
 
         spinner = dialog.findViewById(R.id.spinner)
         title = dialog.findViewById(R.id.editText)
+        option = dialog.findViewById(R.id.option)
         saveBtn = dialog.findViewById(R.id.save)
         discardBtn = dialog.findViewById(R.id.discard)
 
         title.text = "Choose Accessories Color"
+        option.text = "Color"
 
 
         val adapter = ArrayAdapter(this, android.R.layout.simple_expandable_list_item_1, listColor)
@@ -168,6 +172,7 @@ class AccessoriesDetailActivity : AppCompatActivity() {
             val customSparePartList = ArrayList<CustomSparePartModel>()
             val data = mapOf(
                 "uid" to cartId,
+                "productId" to model?.uid,
                 "userId" to user?.uid,
                 "name" to model?.name,
                 "totalPrice" to totalPrice,

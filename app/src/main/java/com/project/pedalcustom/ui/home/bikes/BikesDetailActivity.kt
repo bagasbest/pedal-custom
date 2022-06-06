@@ -106,6 +106,7 @@ class BikesDetailActivity : AppCompatActivity() {
                 val customSparePartList = ArrayList<CustomSparePartModel>()
                 val data = mapOf(
                     "uid" to cartId,
+                    "productId" to model?.uid,
                     "userId" to user?.uid,
                     "name" to model?.name,
                     "totalPrice" to totalPrice,
@@ -169,6 +170,7 @@ class BikesDetailActivity : AppCompatActivity() {
             val data = mapOf(
                 "uid" to cartId,
                 "userId" to user?.uid,
+                "productId" to model?.uid,
                 "name" to model?.name,
                 "totalPrice" to totalPrice,
                 "customSparePartList" to customSparePartList,

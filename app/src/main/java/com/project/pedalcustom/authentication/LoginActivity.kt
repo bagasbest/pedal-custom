@@ -1,5 +1,6 @@
 package com.project.pedalcustom.authentication
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -8,7 +9,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.project.pedalcustom.Homepage
+import com.project.pedalcustom.HomepageAdmin
 import com.project.pedalcustom.R
 import com.project.pedalcustom.databinding.ActivityLoginBinding
 
@@ -54,8 +57,28 @@ class LoginActivity : AppCompatActivity() {
             FirebaseAuth.getInstance().signInWithEmailAndPassword(email,password)
                 .addOnCompleteListener {
                     if(it.isSuccessful) {
-                        binding?.progressBar?.visibility = View.GONE
-                        startActivity(Intent(this, Homepage::class.java))
+
+                        val uid = FirebaseAuth.getInstance().currentUser!!.uid
+                        FirebaseFirestore
+                            .getInstance()
+                            .collection("users")
+                            .document(uid)
+                            .get()
+                            .addOnSuccessListener { task ->
+                                val role = "" + task.data!!["role"]
+                                val prefs = getSharedPreferences(
+                                    "role", Context.MODE_PRIVATE
+                                )
+                                prefs.edit().putString("role", role).apply()
+
+                                if(role == "user") {
+                                    binding?.progressBar?.visibility = View.GONE
+                                    startActivity(Intent(this, Homepage::class.java))
+                                } else {
+                                    binding?.progressBar?.visibility = View.GONE
+                                    startActivity(Intent(this, HomepageAdmin::class.java))
+                                }
+                            }
                     } else {
                         binding?.progressBar?.visibility = View.GONE
                         showFailureDialog()

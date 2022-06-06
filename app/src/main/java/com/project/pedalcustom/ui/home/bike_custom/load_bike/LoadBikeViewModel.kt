@@ -13,11 +13,12 @@ class LoadBikeViewModel : ViewModel() {
     private val TAG = LoadBikeViewModel::class.java.simpleName
 
 
-    fun setListSaveData() {
+    fun setListSaveData(userId: String) {
         listData.clear()
 
         try {
             FirebaseFirestore.getInstance().collection("custom_save_data")
+                .whereEqualTo("userId", userId)
                 .get()
                 .addOnSuccessListener { documents ->
                     for (document in documents) {

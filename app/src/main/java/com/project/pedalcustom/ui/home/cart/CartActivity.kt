@@ -1,10 +1,12 @@
 package com.project.pedalcustom.ui.home.cart
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.CheckBox
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.auth.FirebaseAuth
@@ -21,7 +23,8 @@ class CartActivity : AppCompatActivity() {
     private var isCheckedBikes = false
     private var isCheckedSparePart = false
     private var isCheckedCustomBike = false
-
+    private var cbValidator = ""
+    private var cartToCheckoutList = mutableSetOf<CartModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +38,22 @@ class CartActivity : AppCompatActivity() {
 
         binding?.backButton?.setOnClickListener {
             onBackPressed()
+        }
+
+        binding?.appCompatButton?.setOnClickListener {
+            checkoutCart()
+        }
+    }
+
+    private fun checkoutCart() {
+        if(cartToCheckoutList.size > 0 && cartList.size > 0) {
+            val listData = ArrayList<CartModel>()
+            listData.addAll(cartToCheckoutList)
+            val intent = Intent(this, CheckoutActivity::class.java)
+            intent.putExtra(CheckoutActivity.EXTRA_DATA, listData)
+            startActivity(intent)
+        } else {
+            Toast.makeText(this, "Sorry, minimum 1 product checked", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -53,6 +72,8 @@ class CartActivity : AppCompatActivity() {
                 binding?.llCustom,
                 "bikes",
                 isCheckedBikes,
+                cartToCheckoutList,
+                cbValidator,
             )
             binding?.rvBikes?.adapter = adapter
         }
@@ -71,6 +92,8 @@ class CartActivity : AppCompatActivity() {
                 binding?.llCustom,
                 "accessories",
                 isCheckedAccessories,
+                cartToCheckoutList,
+                cbValidator
             )
             binding?.rvAccessories?.adapter = adapter
         }
@@ -89,6 +112,8 @@ class CartActivity : AppCompatActivity() {
                 binding?.llCustom,
                 "spare part",
                 isCheckedSparePart,
+                cartToCheckoutList,
+                cbValidator
             )
             binding?.rvSparePart?.adapter = adapter
         }
@@ -107,6 +132,8 @@ class CartActivity : AppCompatActivity() {
                 binding?.llCustom,
                 "custom bike",
                 isCheckedCustomBike,
+                cartToCheckoutList,
+                cbValidator
             )
             binding?.rvCustom?.adapter = adapter
         }
@@ -139,18 +166,22 @@ class CartActivity : AppCompatActivity() {
 
             when (view.id) {
                 R.id.cbAllAccessories -> {
+                    cbValidator = "accessories"
                     isCheckedAccessories = checked
                     initRecyclerView()
                 }
                 R.id.cbAllBikes -> {
+                    cbValidator = "bikes"
                     isCheckedBikes = checked
                     initRecyclerView()
                 }
                 R.id.cbAllCustomBike -> {
+                    cbValidator = "custom bike"
                    isCheckedCustomBike = checked
                     initRecyclerView()
                 }
                 R.id.cbAllSparePart -> {
+                    cbValidator = "spare part"
                    isCheckedSparePart = checked
                     initRecyclerView()
                 }

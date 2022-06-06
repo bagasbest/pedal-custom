@@ -5,14 +5,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.FirebaseFirestore
-import com.project.pedalcustom.ui.home.bike_custom.load_bike.LoadBikeModel
-import com.project.pedalcustom.ui.home.bike_custom.load_bike.LoadBikeViewModel
 
 class CartViewModel : ViewModel() {
 
     private val cartList = MutableLiveData<ArrayList<CartModel>>()
     private val listData = ArrayList<CartModel>()
-    private val TAG = LoadBikeViewModel::class.java.simpleName
+    private val TAG = CartViewModel::class.java.simpleName
 
 
     fun setCartList(uid: String) {
@@ -28,6 +26,7 @@ class CartViewModel : ViewModel() {
 
                         model.userId = document.data["userId"].toString()
                         model.uid = document.data["uid"].toString()
+                        model.productId = document.data["productId"].toString()
                         model.name = document.data["name"].toString()
                         model.type = document.data["type"].toString()
                         model.category = document.data["category"].toString()
@@ -36,7 +35,7 @@ class CartViewModel : ViewModel() {
                         model.image = document.data["image"].toString()
                         model.isAssembled = document.data["isAssembled"] as Boolean
                         model.totalPrice = document.data["totalPrice"] as Long
-                        model.customSparePartList = document.toObject(LoadBikeModel::class.java).customSparePartList
+                        model.customSparePartList = document.toObject(CartModel::class.java).customSparePartList
 
                         listData.add(model)
                     }

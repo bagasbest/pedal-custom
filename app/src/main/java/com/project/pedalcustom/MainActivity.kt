@@ -1,5 +1,6 @@
 package com.project.pedalcustom
 
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -21,7 +22,15 @@ class MainActivity : AppCompatActivity() {
             .into(binding!!.splash
             )
         Handler().postDelayed({
-            startActivity(Intent(this, Homepage::class.java))
+            val prefs = getSharedPreferences(
+                "role", Context.MODE_PRIVATE
+            )
+            val role = prefs.getString("role", "user")
+            if(role == "user") {
+                startActivity(Intent(this, Homepage::class.java))
+            } else {
+                startActivity(Intent(this, HomepageAdmin::class.java))
+            }
             finish()
         }, 3000)
 

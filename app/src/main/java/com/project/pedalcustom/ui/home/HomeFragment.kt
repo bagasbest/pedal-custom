@@ -2,6 +2,7 @@ package com.project.pedalcustom.ui.home
 
 import android.annotation.SuppressLint
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -18,6 +19,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
+import com.project.pedalcustom.Homepage
+import com.project.pedalcustom.HomepageAdmin
 import com.project.pedalcustom.R
 import com.project.pedalcustom.authentication.LoginActivity
 import com.project.pedalcustom.authentication.RegisterActivity
@@ -125,6 +128,11 @@ class HomeFragment : Fragment() {
 
         binding.signUpBtn.setOnClickListener {
             if(user != null) {
+                user = null
+                val prefs = activity?.getSharedPreferences(
+                    "role", Context.MODE_PRIVATE
+                )
+                prefs?.edit()?.remove("role")?.apply()
                 FirebaseAuth.getInstance().signOut()
                 binding.signInBtn.text = "Sign In"
                 binding.signUpBtn.text = "Sign Up"

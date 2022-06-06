@@ -1,6 +1,7 @@
 package com.project.pedalcustom.ui.home.cart
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,7 +22,9 @@ class CartAdapter(
     private val llSparePart: LinearLayout?,
     private val llCustom: LinearLayout?,
     private val option: String,
-    private val isCheckedCategory : Boolean?
+    private val isCheckedCategory: Boolean?,
+    private var cartToCheckoutList: MutableSet<CartModel>,
+    private var cbValidator: String,
 ) : RecyclerView.Adapter<CartAdapter.ViewHolder>() {
 
     inner class ViewHolder(private val binding: ItemCartBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -55,8 +58,25 @@ class CartAdapter(
                 price.text = "Rp${formatter.format(model.totalPrice)}"
 
                 if(isCheckedCategory == true) {
-                    if(model.category == option) {
+                    if (model.category == option) {
+                        if (!checkbox.isChecked) {
+                            checkbox.isChecked = true
+                            cartToCheckoutList.add(model)
+                        }
+                    }
+                } else {
+                    if(model.category == cbValidator) {
+                        cartToCheckoutList.remove(model)
+                    }
+                }
+
+                checkbox.setOnClickListener {
+                    if(checkbox.isChecked) {
                         checkbox.isChecked = true
+                        cartToCheckoutList.add(model)
+                    } else {
+                        checkbox.isChecked = false
+                        cartToCheckoutList.remove(model)
                     }
                 }
 

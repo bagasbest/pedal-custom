@@ -110,7 +110,6 @@
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/saveBtn"
             android:layout_width="0dp"
-            android:enabled="false"
             android:layout_height="40dp"
             android:layout_weight="1"
             android:background="@drawable/bg_rounded_rv"

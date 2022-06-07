@@ -117,6 +117,7 @@ class CheckoutActivity : AppCompatActivity() {
                     "productName" to cartList[i].name,
                     "productId" to cartList[i].productId,
                     "status" to "On Process",
+                    "rating" to 0.0,
                 )
 
                 FirebaseFirestore

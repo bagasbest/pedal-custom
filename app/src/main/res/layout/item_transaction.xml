@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:id="@+id/cv"
     android:layout_marginTop="16dp">
 
     <TextView
@@ -26,6 +27,7 @@
         android:paddingHorizontal="10dp"
         android:paddingVertical="3dp"
         android:text="Deliver"
+        android:visibility="gone"
         android:textAlignment="center"
         android:textColor="@color/white"
         android:textStyle="bold"

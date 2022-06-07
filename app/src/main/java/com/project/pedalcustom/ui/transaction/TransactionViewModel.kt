@@ -39,6 +39,7 @@ class TransactionViewModel : ViewModel() {
                         model.qty = document.data["qty"] as Long
                         model.color = document.data["color"].toString()
                         model.image = document.data["image"].toString()
+                        model.rating = document.data["rating"] as Double
                         model.isAssembled = document.data["isAssembled"] as Boolean
                         model.totalPrice = document.data["totalPrice"] as Long
                         model.customSparePartList = document.toObject(TransactionModel::class.java).customSparePartList
@@ -78,6 +79,7 @@ class TransactionViewModel : ViewModel() {
                         model.type = document.data["type"].toString()
                         model.category = document.data["category"].toString()
                         model.qty = document.data["qty"] as Long
+                        model.rating = document.data["rating"] as Double
                         model.color = document.data["color"].toString()
                         model.image = document.data["image"].toString()
                         model.isAssembled = document.data["isAssembled"] as Boolean

@@ -67,7 +67,7 @@ class TransactionFragment : Fragment() {
     private fun initRecyclerView() {
         binding.rvTransaction.layoutManager =
             LinearLayoutManager(activity)
-        adapter = TransactionAdapter()
+        adapter = TransactionAdapter(role)
         binding.rvTransaction.adapter = adapter
     }
 

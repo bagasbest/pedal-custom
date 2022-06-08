@@ -17,6 +17,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.project.pedalcustom.R
 import com.project.pedalcustom.databinding.ActivitySparePartAddBinding
+import java.util.*
+import kotlin.collections.ArrayList
 
 class SparePartAddActivity : AppCompatActivity() {
 
@@ -118,6 +120,7 @@ class SparePartAddActivity : AppCompatActivity() {
             val data = mapOf(
                 "uid" to uid,
                 "name" to name,
+                "nameTemp" to name.toLowerCase(Locale.ROOT),
                 "code" to code,
                 "type" to sparePartType,
                 "bikeType" to bikeType,

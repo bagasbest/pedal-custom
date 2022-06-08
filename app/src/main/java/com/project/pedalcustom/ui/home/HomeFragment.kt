@@ -44,6 +44,11 @@ class HomeFragment : Fragment() {
     private var image: String? = null
     private val REQUEST_IMAGE_GALLERY = 1001
 
+    override fun onResume() {
+        super.onResume()
+        checkIsLoginOrNot()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -55,7 +60,7 @@ class HomeFragment : Fragment() {
         user = FirebaseAuth.getInstance().currentUser
 
         initView()
-        checkIsLoginOrNot()
+
 
         return binding.root
     }

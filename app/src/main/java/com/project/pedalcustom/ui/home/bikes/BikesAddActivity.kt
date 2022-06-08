@@ -15,9 +15,10 @@ import com.bumptech.glide.Glide
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
-import com.project.pedalcustom.Homepage
 import com.project.pedalcustom.R
 import com.project.pedalcustom.databinding.ActivityBikesAddBinding
+import java.util.*
+import kotlin.collections.ArrayList
 
 class BikesAddActivity : AppCompatActivity() {
 
@@ -101,6 +102,7 @@ class BikesAddActivity : AppCompatActivity() {
             val data = mapOf(
                 "uid" to uid,
                 "name" to name,
+                "nameTemp" to name.lowercase(Locale.ROOT),
                 "code" to code,
                 "type" to bikeType,
                 "color" to color,

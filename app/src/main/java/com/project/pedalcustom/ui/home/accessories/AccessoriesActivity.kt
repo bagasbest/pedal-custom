@@ -3,6 +3,8 @@ package com.project.pedalcustom.ui.home.accessories
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,6 +17,7 @@ import com.project.pedalcustom.R
 import com.project.pedalcustom.authentication.LoginActivity
 import com.project.pedalcustom.databinding.ActivityAccessoriesBinding
 import com.project.pedalcustom.ui.home.cart.CartActivity
+import java.util.*
 
 class AccessoriesActivity : AppCompatActivity() {
 
@@ -27,7 +30,7 @@ class AccessoriesActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         initRecyclerView()
-        initViewModel()
+        initViewModel("all")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,6 +56,28 @@ class AccessoriesActivity : AppCompatActivity() {
                 startActivity(Intent(this, LoginActivity::class.java))
             }
         }
+
+        binding?.search?.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
+            }
+
+            override fun afterTextChanged(p0: Editable?) {
+                if(p0.toString().isNotEmpty()) {
+                    val query = p0.toString().toLowerCase(Locale.ROOT)
+                    initRecyclerView()
+                    initViewModel(query)
+                } else {
+                    initRecyclerView()
+                    initViewModel("all")
+                }
+            }
+
+        })
 
     }
 
@@ -84,11 +109,15 @@ class AccessoriesActivity : AppCompatActivity() {
         binding?.recyclerView?.adapter = adapter
     }
 
-    private fun initViewModel() {
+    private fun initViewModel(query : String) {
         val viewModel = ViewModelProvider(this)[AccessoriesViewModel::class.java]
 
         binding?.progressBar?.visibility = View.VISIBLE
-        viewModel.setListAccessories()
+        if(query == "all") {
+            viewModel.setListAccessories()
+        } else {
+            viewModel.setListAccessoriesByQuery(query)
+        }
         viewModel.getAccessories().observe(this) { accessoriesList ->
             if (accessoriesList.size > 0) {
                 adapter?.setData(accessoriesList)

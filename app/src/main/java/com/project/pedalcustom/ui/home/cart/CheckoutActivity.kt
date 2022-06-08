@@ -44,6 +44,7 @@ class CheckoutActivity : AppCompatActivity() {
     private var totalPrice = 0L
     private var userName = ""
     private var userPhone = ""
+    private var userAddress = ""
 
     override fun onResume() {
         super.onResume()
@@ -215,7 +216,9 @@ class CheckoutActivity : AppCompatActivity() {
                 userPhone = "" + it.data!!["phone"]
 
                 addressList = address.split(",").map { data -> data.trim() } as ArrayList<String>
-                binding?.address?.text = addressList[0]
+                if(userAddress != "") {
+                    binding?.address?.text = addressList[0]
+                }
             }
     }
 

@@ -140,16 +140,19 @@ class SparePartDetailActivity : AppCompatActivity() {
         val spinner: SearchableSpinner
         val saveBtn: Button
         val title: TextView
+        val option: TextView
         val discardBtn: Button
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.popup_color_product)
 
         spinner = dialog.findViewById(R.id.spinner)
         title = dialog.findViewById(R.id.editText)
+        option = dialog.findViewById(R.id.option)
         saveBtn = dialog.findViewById(R.id.save)
         discardBtn = dialog.findViewById(R.id.discard)
 
         title.text = "Choose Spare Part Color"
+        option.text = "color"
 
 
         val adapter = ArrayAdapter(this, android.R.layout.simple_expandable_list_item_1, listColor)

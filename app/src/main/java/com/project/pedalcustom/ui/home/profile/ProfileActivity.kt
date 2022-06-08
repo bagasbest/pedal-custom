@@ -57,6 +57,10 @@ class ProfileActivity : AppCompatActivity() {
             shopEditPopup("phone")
         }
 
+        binding?.discard?.setOnClickListener {
+            onBackPressed()
+        }
+
         binding?.addressEdit?.setOnClickListener {
             val options = arrayOf("Add New Address", "Edit Current Address")
             val builder = AlertDialog.Builder(this)

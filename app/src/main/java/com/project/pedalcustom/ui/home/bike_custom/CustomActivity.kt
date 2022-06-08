@@ -1340,6 +1340,12 @@ class CustomActivity : AppCompatActivity(), IFirebaseLoadDone {
             }
         }
 
+        if(customBikeList.size == 0) {
+            progressDialog.dismiss()
+            Toast.makeText(this, "Minimum add 1 sparepart", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val data = mapOf(
             "uid" to uid,
             "productId" to "",

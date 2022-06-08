@@ -16,6 +16,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.project.pedalcustom.R
 import com.project.pedalcustom.databinding.ActivityAccessoriesAddBinding
+import java.util.*
+import kotlin.collections.ArrayList
 
 class AccessoriesAddActivity : AppCompatActivity() {
     private var binding : ActivityAccessoriesAddBinding? = null
@@ -82,6 +84,7 @@ class AccessoriesAddActivity : AppCompatActivity() {
             val data = mapOf(
                 "uid" to uid,
                 "name" to name,
+                "nameTemp" to name.toLowerCase(Locale.ROOT),
                 "code" to code,
                 "type" to type,
                 "color" to color,

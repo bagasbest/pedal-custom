@@ -9,6 +9,7 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.TextView
@@ -81,6 +82,15 @@ class CheckoutActivity : AppCompatActivity() {
                 .compress(1024)
                 .start(REQUEST_IMAGE_GALLERY)
         }
+
+        binding?.paymentProof?.setOnClickListener {
+            if(paymentProof != null) {
+                ImagePicker.with(this)
+                    .galleryOnly()
+                    .compress(1024)
+                    .start(REQUEST_IMAGE_GALLERY)
+            }
+        }
     }
 
     private fun formValidation() {
@@ -118,6 +128,7 @@ class CheckoutActivity : AppCompatActivity() {
                     "productName" to cartList[i].name,
                     "productId" to cartList[i].productId,
                     "status" to "On Process",
+                    "paymentProof" to paymentProof,
                     "rating" to 0.0,
                 )
 
@@ -127,6 +138,12 @@ class CheckoutActivity : AppCompatActivity() {
                     .document(transactionId)
                     .set(data)
                     .addOnCompleteListener {
+                        FirebaseFirestore
+                            .getInstance()
+                            .collection("cart")
+                            .document(cartList[i].uid!!)
+                            .delete()
+
                         if(it.isSuccessful && i == cartList.size-1) {
                             progressDialog.dismiss()
                             showSuccessDialog()
@@ -250,6 +267,9 @@ class CheckoutActivity : AppCompatActivity() {
                         Glide.with(this)
                             .load(paymentProof)
                             .into(binding!!.paymentProof)
+
+                        binding?.imageHint?.visibility = View.GONE
+                        binding?.imageHintTxt?.visibility = View.GONE
                     }
                     .addOnFailureListener { e: Exception ->
                         mProgressDialog.dismiss()

@@ -24,6 +24,7 @@ class AccessoriesActivity : AppCompatActivity() {
     private var binding : ActivityAccessoriesBinding ? = null
     private var adapter: AccessoriesAdapter? = null
     private var uid = ""
+    private var role = ""
     private var user : FirebaseUser? = null
 
 
@@ -89,7 +90,7 @@ class AccessoriesActivity : AppCompatActivity() {
                 .document(user!!.uid)
                 .get()
                 .addOnSuccessListener {
-                    val role = "" + it.data!!["role"]
+                    role = "" + it.data!!["role"]
                     if(role == "admin") {
                         binding?.addAccessoriesBtn?.visibility = View.VISIBLE
                     }
@@ -105,7 +106,7 @@ class AccessoriesActivity : AppCompatActivity() {
 
         binding?.recyclerView?.layoutManager =
             StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
-        adapter = AccessoriesAdapter(uid)
+        adapter = AccessoriesAdapter(uid, role)
         binding?.recyclerView?.adapter = adapter
     }
 

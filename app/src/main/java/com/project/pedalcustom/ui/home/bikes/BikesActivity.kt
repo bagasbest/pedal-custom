@@ -26,6 +26,7 @@ class BikesActivity : AppCompatActivity() {
     private var adapter: BikesAdapter? = null
     private var user : FirebaseUser? = null
     private var uid = ""
+    private var role = ""
 
     override fun onResume() {
         super.onResume()
@@ -92,7 +93,7 @@ class BikesActivity : AppCompatActivity() {
                 .document(user!!.uid)
                 .get()
                 .addOnSuccessListener {
-                    val role = "" + it.data!!["role"]
+                    role = "" + it.data!!["role"]
                     if(role == "admin") {
                         binding?.addBikeBtn?.visibility = View.VISIBLE
                     }
@@ -108,7 +109,7 @@ class BikesActivity : AppCompatActivity() {
 
         binding?.recyclerView?.layoutManager =
             StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL)
-        adapter = BikesAdapter(uid)
+        adapter = BikesAdapter(uid, role)
         binding?.recyclerView?.adapter = adapter
     }
 

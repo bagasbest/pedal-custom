@@ -27,6 +27,23 @@
         android:paddingHorizontal="10dp"
         android:paddingVertical="3dp"
         android:text="Deliver"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:layout_marginBottom="10dp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/cancel"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/cancel"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_rounded_rv"
+        android:backgroundTint="@android:color/holo_red_light"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="3dp"
+        android:text="Cancel"
         android:visibility="gone"
         android:textAlignment="center"
         android:textColor="@color/white"

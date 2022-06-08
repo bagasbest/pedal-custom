@@ -51,6 +51,12 @@ class TransactionActivity : AppCompatActivity() {
         binding?.productName?.text = model?.productName
         binding?.date?.text = "Date : " + model?.date
         binding?.type?.text = "Type : " + model?.type
+
+
+        Glide.with(this)
+            .load(model?.paymentProof)
+            .into(binding!!.paymentProof)
+
         val formatter = DecimalFormat("#,###")
         binding?.price?.text = "Price : Rp${formatter.format(model?.totalPrice)}"
 

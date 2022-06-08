@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.util.Patterns
 import android.view.View
 import android.widget.RadioButton
 import android.widget.Toast
@@ -74,8 +75,8 @@ class RegisterActivity : AppCompatActivity() {
 
         if(email.isEmpty()) {
             Toast.makeText(this, "Email must be filled!", Toast.LENGTH_SHORT).show()
-        } else if(!email.contains("@") || !email.contains(".")) {
-            Toast.makeText(this, "Email format wrong!", Toast.LENGTH_SHORT).show()
+        } else if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this, "Email must contain '@' and following '.com'", Toast.LENGTH_SHORT).show()
         } else if (password.isEmpty()) {
             Toast.makeText(this, "Password must be filled!", Toast.LENGTH_SHORT).show()
         } else if (password.length < 6) {

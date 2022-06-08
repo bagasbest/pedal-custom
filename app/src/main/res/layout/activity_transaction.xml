@@ -203,30 +203,30 @@
 
 
             <LinearLayout
+                android:id="@+id/customBikeRv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/customBikeRv"
-                android:visibility="gone"
                 android:layout_marginTop="10dp"
+                android:orientation="vertical"
+                android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/image"
-                android:orientation="vertical">
+                app:layout_constraintTop_toBottomOf="@+id/image">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Spare Part: "
-                    android:textSize="16sp"
                     android:textColor="@color/black"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/assembled"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/assembled"
-                    android:textSize="16sp"
-                    android:textColor="@color/black" />
+                    android:textColor="@color/black"
+                    android:textSize="16sp" />
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvSparePart"
@@ -236,6 +236,30 @@
                     tools:listitem="@layout/item_spare_part" />
 
             </LinearLayout>
+
+
+            <TextView
+                android:id="@+id/paymentProofTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16sp"
+                android:text="Payment of Proof"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/customBikeRv" />
+
+            <com.makeramen.roundedimageview.RoundedImageView
+                android:id="@+id/paymentProof"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:layout_marginTop="16sp"
+                app:riv_corner_radius="5dp"
+                android:scaleType="centerCrop"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/paymentProofTxt" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

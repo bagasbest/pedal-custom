@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -65,13 +66,14 @@ class TransactionAdapter(private val role: String) : RecyclerView.Adapter<Transa
                 }
 
                 if(role == "admin") {
-                    if(model.status != "Delivered") {
+                    if(model.status == "On Process") {
                         deliver.visibility = View.VISIBLE
+                        cancel.visibility = View.VISIBLE
                     }
                 } else {
-                    if(model.status == "Delivered" && model.rating == 0.0) {
-                        deliver.visibility = View.VISIBLE
-                        deliver.text = "Done"
+                    if(model.status == "On Delivery" && model.rating == 0.0) {
+                        cancel.visibility = View.VISIBLE
+                        cancel.text = "Done"
                     }
                 }
 
@@ -81,27 +83,49 @@ class TransactionAdapter(private val role: String) : RecyclerView.Adapter<Transa
                 price.text = "Rp${formatter.format(model.totalPrice)}"
 
                 deliver.setOnClickListener {
+                    AlertDialog.Builder(itemView.context)
+                        .setTitle("Confirm Deliver Transaction")
+                        .setMessage("Are you sure want to deliver ${model.productName} ?")
+                        .setIcon(R.drawable.ic_baseline_warning_24)
+                        .setPositiveButton("YES") { dialogInterface, _ ->
+                            dialogInterface.dismiss()
+
+                            if(model.status == "On Process") {
+                                updateStatus("On Delivery", model, itemView.context, transactionList, position)
+                            }
+                        }
+                        .setNegativeButton("NO", null)
+                        .show()
+                }
+
+                cancel.setOnClickListener {
                     if(role == "admin") {
                         AlertDialog.Builder(itemView.context)
-                            .setTitle("Confirm Deliver Spare Part")
-                            .setMessage("Are you sure want to deliver ${model.productName} ?")
+                            .setTitle("Confirm Cancel Transaction")
+                            .setMessage("Are you sure want to cancel ${model.productName} ?")
                             .setIcon(R.drawable.ic_baseline_warning_24)
                             .setPositiveButton("YES") { dialogInterface, _ ->
                                 dialogInterface.dismiss()
 
-                                if(model.status == "On Process") {
-                                    updateStatus("On Delivery", model, itemView.context, transactionList, position)
-                                } else if (model.status == "On Delivery") {
-                                    updateStatus("Delivered", model, itemView.context, transactionList, position)
-                                    updateSellProduct(model.productId, model.category, model.customSparePartList)
-                                    createLogTransaction(model.productName, model.category)
-                                }
+                                FirebaseFirestore
+                                    .getInstance()
+                                    .collection("transaction")
+                                    .document(model.uid!!)
+                                    .delete()
+                                    .addOnCompleteListener {
+                                        if(it.isSuccessful) {
+                                            transactionList.removeAt(adapterPosition)
+                                            notifyDataSetChanged()
+                                            Toast.makeText(itemView.context, "Successfully cancel transaction, this item will be delete!", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
                             }
                             .setNegativeButton("NO", null)
                             .show()
                     } else {
                         val btnSubmitRating: Button
                         val btnDismiss: Button
+                        val pb: ProgressBar
                         val ratingBar: RatingBar
 
                         val dialog = Dialog(itemView.context)
@@ -111,6 +135,7 @@ class TransactionAdapter(private val role: String) : RecyclerView.Adapter<Transa
 
                         btnSubmitRating = dialog.findViewById(R.id.submit)
                         btnDismiss = dialog.findViewById(R.id.skip)
+                        pb = dialog.findViewById(R.id.progressBar)
                         ratingBar = dialog.findViewById(R.id.ratingBar)
 
 
@@ -123,18 +148,26 @@ class TransactionAdapter(private val role: String) : RecyclerView.Adapter<Transa
                                 )
                                     .show()
                             }  else {
-                                FirebaseFirestore
-                                    .getInstance()
-                                    .collection("transaction")
-                                    .document(model.uid!!)
-                                    .update("rating", ratingBar.rating.toDouble())
-                                    .addOnCompleteListener {
-                                        if(it.isSuccessful) {
-                                            dialog.dismiss()
-                                            deliver.visibility = View.GONE
-                                            Toast.makeText(itemView.context, "Successfully give rating", Toast.LENGTH_SHORT).show()
+                                pb.visibility = View.VISIBLE
+                                updateStatus("Delivered", model, itemView.context, transactionList, position)
+                                updateSellProduct(model.productId, model.category, model.customSparePartList)
+                                createLogTransaction(model.productName, model.category)
+
+                                Handler().postDelayed({
+                                    FirebaseFirestore
+                                        .getInstance()
+                                        .collection("transaction")
+                                        .document(model.uid!!)
+                                        .update("rating", ratingBar.rating.toDouble())
+                                        .addOnCompleteListener {
+                                            if(it.isSuccessful) {
+                                                dialog.dismiss()
+                                                pb.visibility = View.GONE
+                                                deliver.visibility = View.GONE
+                                                Toast.makeText(itemView.context, "Successfully give rating", Toast.LENGTH_SHORT).show()
+                                            }
                                         }
-                                    }
+                                },2000)
                             }
                         }
 

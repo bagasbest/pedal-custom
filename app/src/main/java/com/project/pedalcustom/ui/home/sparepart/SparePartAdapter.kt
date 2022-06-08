@@ -3,6 +3,7 @@ package com.project.pedalcustom.ui.home.sparepart
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -12,7 +13,7 @@ import com.project.pedalcustom.R
 import com.project.pedalcustom.databinding.ItemBikeBinding
 import java.text.DecimalFormat
 
-class SparePartAdapter(private val myUid: String) : RecyclerView.Adapter<SparePartAdapter.ViewHolder>() {
+class SparePartAdapter(private val myUid: String, private val role: String) : RecyclerView.Adapter<SparePartAdapter.ViewHolder>() {
 
     private val sparePartList = ArrayList<SparePartModel>()
     @SuppressLint("NotifyDataSetChanged")
@@ -35,6 +36,9 @@ class SparePartAdapter(private val myUid: String) : RecyclerView.Adapter<SparePa
                     .load(model.image!![0])
                     .into(image)
 
+                if(myUid == "" || role == "admin") {
+                    favorite.visibility = View.GONE
+                }
 
 
                 if(model.favoriteBy!!.contains(myUid)) {

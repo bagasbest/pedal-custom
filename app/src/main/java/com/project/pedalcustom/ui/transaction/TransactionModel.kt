@@ -23,5 +23,6 @@ data class TransactionModel(
     var productName : String? = null,
     var productId : String? = null,
     var status : String? = null,
+    var paymentProof : String? = null,
     var rating : Double? = 0.0,
 ) : Parcelable

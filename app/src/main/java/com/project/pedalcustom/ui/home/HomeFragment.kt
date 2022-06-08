@@ -92,7 +92,7 @@ class HomeFragment : Fragment() {
                     progressDialog.dismiss()
                 }
 
-            binding.signInBtn.text = "Edit Profil"
+            binding.signInBtn.text = "Edit Profile"
             binding.signUpBtn.text = "Logout"
         }
     }

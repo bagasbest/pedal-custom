@@ -3,6 +3,7 @@ package com.project.pedalcustom.ui.home.profile
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.app.Dialog
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
@@ -19,19 +20,24 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.project.pedalcustom.R
 import com.project.pedalcustom.databinding.ActivityProfileBinding
+import com.rosemaryapp.amazingspinner.AmazingSpinner
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class ProfileActivity : AppCompatActivity() {
 
-    private var binding : ActivityProfileBinding ? = null
-    private var user : FirebaseUser? = null
+    private var binding: ActivityProfileBinding? = null
+    private var user: FirebaseUser? = null
     private var name = ""
     private var dob = ""
     private var gender = ""
     private var phone = ""
     private var address = ""
+    private var city = ""
+    private var cityPickerAddEdit = ""
+    private var cityAddressList = ArrayList<CityAddressModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,7 +79,9 @@ class ProfileActivity : AppCompatActivity() {
                     shopEditPopup("address add")
                 } else {
                     /// edit address
-                    shopEditPopup("address edit")
+                    val intent = Intent(this, ProfileEditCityAddressActivity::class.java)
+                    intent.putExtra(ProfileEditCityAddressActivity.EXTRA_DATA, cityAddressList)
+                    startActivity(intent)
                 }
             }
             builder.show()
@@ -90,6 +98,7 @@ class ProfileActivity : AppCompatActivity() {
         val data = mapOf(
             "name" to name,
             "address" to address,
+            "city" to city,
             "phone" to phone,
             "dob" to dob,
             "gender" to gender,
@@ -102,10 +111,14 @@ class ProfileActivity : AppCompatActivity() {
             .update(data)
             .addOnCompleteListener {
                 binding?.save?.isEnabled = true
-                if(it.isSuccessful) {
+                if (it.isSuccessful) {
                     Toast.makeText(this, "Success update data", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this, "Failure update data, internet connection trouble", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "Failure update data, internet connection trouble",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
     }
@@ -116,19 +129,21 @@ class ProfileActivity : AppCompatActivity() {
         val etPhone: TextInputEditText
         val etAddress: TextInputEditText
         val etDob: TextInputEditText
-        val rbMale : RadioButton
-        val editText : TextView
-        val rbFemale : RadioButton
+        val rbMale: RadioButton
+        val editText: TextView
+        val rbFemale: RadioButton
         val confirmBtn: Button
         val dateRangeBtn: ImageView
-        val nameView : TextInputLayout
-        val addressView : TextInputLayout
-        val phoneView : TextInputLayout
-        val dobView : ConstraintLayout
-        val rg : RadioGroup
+        val nameView: TextInputLayout
+        val popupCityAddress: LinearLayout
+        val citySp: AmazingSpinner
+        val phoneView: TextInputLayout
+        val dobView: ConstraintLayout
+        val rg: RadioGroup
         val dialog = Dialog(this)
         dialog.setContentView(R.layout.popup_edit_profile)
 
+        popupCityAddress = dialog.findViewById(R.id.popup_address)
         confirmBtn = dialog.findViewById(R.id.confirmBtn)
         editText = dialog.findViewById(R.id.editText)
         editText.text = "Edit $option"
@@ -141,7 +156,7 @@ class ProfileActivity : AppCompatActivity() {
                 etName.setText(name)
                 confirmBtn.setOnClickListener {
                     val nameEdit = etName.text.toString().trim()
-                    if(nameEdit.isEmpty()) {
+                    if (nameEdit.isEmpty()) {
                         Toast.makeText(this, "Full name must be filled!", Toast.LENGTH_SHORT).show()
                     } else {
                         name = nameEdit
@@ -157,8 +172,9 @@ class ProfileActivity : AppCompatActivity() {
                 etPhone.setText(phone)
                 confirmBtn.setOnClickListener {
                     val phoneEdit = etPhone.text.toString().trim()
-                    if(phoneEdit.isEmpty()) {
-                        Toast.makeText(this, "Phone number must be filled!", Toast.LENGTH_SHORT).show()
+                    if (phoneEdit.isEmpty()) {
+                        Toast.makeText(this, "Phone number must be filled!", Toast.LENGTH_SHORT)
+                            .show()
                     } else {
                         phone = phoneEdit
                         binding?.phone?.text = phone
@@ -167,34 +183,21 @@ class ProfileActivity : AppCompatActivity() {
                 }
             }
             "address add" -> {
+                popupCityAddress.visibility = View.VISIBLE
                 etAddress = dialog.findViewById(R.id.address)
-                addressView = dialog.findViewById(R.id.addressView)
-                addressView.visibility = View.VISIBLE
+                citySp = dialog.findViewById(R.id.city)
+                dropdownCity(citySp)
 
                 confirmBtn.setOnClickListener {
                     val addressEdit = etAddress.text.toString().trim()
-                    if(addressEdit.isEmpty()) {
+                    if (addressEdit.isEmpty()) {
                         Toast.makeText(this, "Address must be filled!", Toast.LENGTH_SHORT).show()
+                    } else if (cityPickerAddEdit == "") {
+                        Toast.makeText(this, "City must be picked", Toast.LENGTH_SHORT).show()
                     } else {
-                         address = "$address, $addressEdit"
-                        setAddress(address, "delete")
-                    }
-                    dialog.dismiss()
-                }
-            }
-            "address edit" -> {
-                etAddress = dialog.findViewById(R.id.address)
-                addressView = dialog.findViewById(R.id.addressView)
-                addressView.visibility = View.VISIBLE
-                etAddress.setText(address)
-
-                confirmBtn.setOnClickListener {
-                    val addressEdit = etAddress.text.toString().trim()
-                    if(addressEdit.isEmpty()) {
-                        Toast.makeText(this, "Address must be filled!", Toast.LENGTH_SHORT).show()
-                    } else {
-                        address = addressEdit
-                        setAddress(address, "edit")
+                        address = "$address, $addressEdit"
+                        city = "$city, $cityPickerAddEdit"
+                        setAddress(address, city, "add")
                     }
                     dialog.dismiss()
                 }
@@ -208,10 +211,13 @@ class ProfileActivity : AppCompatActivity() {
 
                 dateRangeBtn.setOnClickListener {
                     val calendar = Calendar.getInstance()
-                    val datePicker = DatePickerDialog(this, android.R.style.Theme_Holo_Light_Dialog_MinWidth,
+                    val datePicker = DatePickerDialog(
+                        this,
+                        android.R.style.Theme_Holo_Light_Dialog_MinWidth,
                         { _, i1, i2, i3 ->
 
-                            val formattedDate = SimpleDateFormat("dd / MM / yyyy", Locale.getDefault())
+                            val formattedDate =
+                                SimpleDateFormat("dd / MM / yyyy", Locale.getDefault())
                             val selectedDate = Calendar.getInstance()
                             selectedDate.set(Calendar.YEAR, i1)
                             selectedDate.set(Calendar.MONTH, i2)
@@ -222,7 +228,10 @@ class ProfileActivity : AppCompatActivity() {
                             etDob.setText(dob)
                             binding?.dob?.text = dob
                         },
-                        calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH))
+                        calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DAY_OF_MONTH)
+                    )
                     datePicker.show()
                 }
 
@@ -238,14 +247,14 @@ class ProfileActivity : AppCompatActivity() {
                 rbMale = dialog.findViewById(R.id.rbMale)
                 rbFemale = dialog.findViewById(R.id.rbFemale)
 
-                if(gender == "Male") {
+                if (gender == "Male") {
                     rbMale.isChecked = true
                 } else {
                     rbFemale.isChecked = true
                 }
 
                 confirmBtn.setOnClickListener {
-                    gender = if(rbMale.isChecked) {
+                    gender = if (rbMale.isChecked) {
                         "Male"
                     } else {
                         "Female"
@@ -258,6 +267,20 @@ class ProfileActivity : AppCompatActivity() {
 
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         dialog.show()
+    }
+
+    private fun dropdownCity(citySp: AmazingSpinner) {
+        val adapter = ArrayAdapter.createFromResource(
+            this,
+            R.array.city, android.R.layout.simple_list_item_1
+        )
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        // Apply the adapter to the spinner
+        citySp.setAdapter(adapter)
+        citySp.setOnItemClickListener { _, _, _, _ ->
+            cityPickerAddEdit = citySp.text.toString()
+        }
     }
 
     private fun retrieveUserData() {
@@ -274,45 +297,62 @@ class ProfileActivity : AppCompatActivity() {
                 val email = "" + it.data!!["email"]
                 phone = "" + it.data!!["phone"]
                 address = "" + it.data!!["address"]
+                city = "" + it.data!!["city"]
 
                 binding?.name?.text = name
                 binding?.dob?.text = dob
                 binding?.gender?.text = gender
                 binding?.email?.text = email
                 binding?.phone?.text = phone
-                setAddress(address, "retrieve")
+                setAddress(address, city, "retrieve")
             }
     }
 
     @SuppressLint("SetTextI18n")
-    private fun setAddress(address: String, option: String) {
-        val listAddress: List<String> = address.split(",").map { it.trim() }
-        var words = ""
+    private fun setAddress(address: String, city: String, option: String) {
+        cityAddressList.clear()
+        val listAddress = address.split(",").map { it.trim() }
+        val listCity = city.split(",").map { it.trim() }
+        var cityWord = ""
+        var addressWord = ""
 
-        if(option != "retrieve") {
-           binding?.llAddress?.removeAllViews()
+        if (option != "retrieve") {
+            binding?.llAddress?.removeAllViews()
         }
 
-        for(i in listAddress.indices) {
+        for (i in listAddress.indices) {
+
+            val model = CityAddressModel()
+            model.address = listAddress[i]
+            model.city = listCity[i]
+            cityAddressList.add(model)
 
             val addressTv = TextView(this)
-            addressTv.text = "Address"
+            addressTv.text = "City and Address"
             addressTv.setTypeface(addressTv.typeface, Typeface.BOLD)
-            (binding?.llAddress as LinearLayout).addView(addressTv)
 
-            words = listAddress[i]
+            addressWord = listAddress[i]
+            cityWord = listCity[i]
 
-            val valueTV = TextView(this)
-            valueTV.text = words
-            valueTV.id = i
+            val valueCityTV = TextView(this)
+            valueCityTV.text = "City: $cityWord"
+            valueCityTV.id = i
+
+            val valueAddressTV = TextView(this)
+            valueAddressTV.text = "Address: $addressWord"
+            valueAddressTV.id = i
 
             val params = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
-            params.bottomMargin = 16
-            valueTV.layoutParams = params
-            (binding?.llAddress as LinearLayout).addView(valueTV)
+            params.bottomMargin = 30
+            valueAddressTV.layoutParams = params
+
+            (binding?.llAddress as LinearLayout).addView(addressTv)
+            (binding?.llAddress as LinearLayout).addView(valueCityTV)
+            (binding?.llAddress as LinearLayout).addView(valueAddressTV)
+
         }
     }
 

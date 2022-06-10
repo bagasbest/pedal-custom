@@ -38,14 +38,18 @@ class CheckoutActivity : AppCompatActivity() {
     private var binding: ActivityCheckoutBinding? = null
     private var uid = FirebaseAuth.getInstance().currentUser!!.uid
     private var addressList = ArrayList<String>()
+    private var cityList = ArrayList<String>()
+    private var cityAddressList = ArrayList<String>()
     private var adapter: CheckoutAdapter? = null
     private lateinit var cartList : ArrayList<CartModel>
     private var paymentProof: String? = null
+    private var cityMatcher = ""
     private val REQUEST_IMAGE_GALLERY = 1001
     private var totalPrice = 0L
     private var userName = ""
     private var userPhone = ""
     private var userAddress = ""
+    private var sendingFee = 0L
 
     override fun onResume() {
         super.onResume()
@@ -58,7 +62,7 @@ class CheckoutActivity : AppCompatActivity() {
         setContentView(binding?.root)
 
         initRecyclerView()
-        getTotalPrice()
+
 
         binding?.checkoutBtn?.setOnClickListener {
             formValidation()
@@ -170,11 +174,13 @@ class CheckoutActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun getTotalPrice() {
+
+        totalPrice = 0L
         for(i in cartList.indices) {
             totalPrice += cartList[i].totalPrice!!
         }
         val formatter = DecimalFormat("#,###")
-        binding?.totalPrice?.text = "Rp${formatter.format(totalPrice)}"
+        binding?.totalPrice?.text = "Rp${formatter.format(totalPrice+sendingFee)}"
     }
 
     private fun initRecyclerView() {
@@ -205,7 +211,7 @@ class CheckoutActivity : AppCompatActivity() {
 
 
         val adapter =
-            ArrayAdapter(this, android.R.layout.simple_expandable_list_item_1, addressList)
+            ArrayAdapter(this, android.R.layout.simple_expandable_list_item_1, cityAddressList)
         spinner?.adapter = adapter
 
         discardBtn.setOnClickListener {
@@ -214,28 +220,64 @@ class CheckoutActivity : AppCompatActivity() {
 
         saveBtn.setOnClickListener {
             dialog.dismiss()
-            binding?.address?.text = spinner?.selectedItem?.toString()
+            cityMatcher = spinner?.selectedItem?.toString().toString()
+            userAddress = cityMatcher
+            binding?.address?.text = cityMatcher
+
+            sendingFee = if(cityMatcher.contains("Out of JABODETABEK")) {
+                100000
+            } else {
+                50000
+            }
+            getTotalPrice()
+
         }
 
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         dialog.show()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun getAddress() {
+        addressList.clear()
+        cityList.clear()
+        cityAddressList.clear()
+
         FirebaseFirestore
             .getInstance()
             .collection("users")
             .document(uid)
             .get()
             .addOnSuccessListener { it ->
+                val city = "" + it.data!!["city"]
                 val address = "" + it.data!!["address"]
                 userName = "" + it.data!!["name"]
                 userPhone = "" + it.data!!["phone"]
 
+
                 addressList = address.split(",").map { data -> data.trim() } as ArrayList<String>
-                if(userAddress != "") {
-                    binding?.address?.text = addressList[0]
+                cityList = city.split(",").map { data -> data.trim() } as ArrayList<String>
+
+                for(i in addressList.indices) {
+                    cityAddressList.add("${cityList[i]}, ${addressList[i]}")
                 }
+
+                if(userAddress == "") {
+                    userAddress = "${cityList[0]}, ${addressList[0]}"
+                    binding?.address?.text = userAddress
+                    cityMatcher = cityList[0]
+                }
+
+
+                sendingFee = if(!cityMatcher.contains("Out of JABODETABEK")) {
+                    50000
+                } else {
+                    100000
+                }
+                getTotalPrice()
+
+                Log.e("tad", userAddress)
+                Log.e("tad", cityMatcher)
             }
     }
 

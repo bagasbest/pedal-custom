@@ -13,6 +13,16 @@
         <item>Any</item>
     </string-array>
 
+    <string-array name="city">
+        <item>Jakarta</item>
+        <item>Bogor</item>
+        <item>Depok</item>
+        <item>Tangerang</item>
+        <item>Bekasi</item>
+        <item>Out of JABODETABEK</item>
+    </string-array>
+
+
     <string-array name="spare_part_type">
         <item>Brake</item>
         <item>Brake Levers</item>

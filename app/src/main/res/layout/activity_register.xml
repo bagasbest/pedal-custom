@@ -129,17 +129,17 @@
                 android:textStyle="bold" />
 
             <LinearLayout
+                android:id="@+id/dobLayout"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:id="@+id/dobLayout"
                 android:layout_weight="4"
                 android:orientation="horizontal">
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="0dp"
-                    android:layout_weight="3"
-                    android:layout_marginEnd="20sp"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="20sp"
+                    android:layout_weight="3"
                     tools:ignore="NestedWeights">
 
                     <EditText
@@ -154,15 +154,14 @@
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <ImageView
+                    android:id="@+id/dateRangeBtn"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="center"
                     android:layout_marginEnd="10dp"
-                    android:src="@drawable/ic_baseline_date_range_24"
-                    android:id="@+id/dateRangeBtn" />
+                    android:src="@drawable/ic_baseline_date_range_24" />
 
             </LinearLayout>
-
 
 
             <TextView
@@ -183,9 +182,9 @@
                 <RadioButton
                     android:id="@+id/rbMale"
                     android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:onClick="onRadioButtonClicked"
-                    android:layout_height="wrap_content"
                     android:text="Male"
                     tools:ignore="OnClick" />
 
@@ -212,19 +211,20 @@
                 android:textStyle="bold" />
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayout123"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp">
 
-                <EditText
+                <com.rosemaryapp.amazingspinner.AmazingSpinner
                     android:id="@+id/city"
+                    style="@style/Widget.MaterialComponents.AutoCompleteTextView.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Jakarta Barat"
-                    android:inputType="textCapWords" />
-
+                    android:hint="Choose City" />
 
             </com.google.android.material.textfield.TextInputLayout>
-
 
             <TextView
                 android:layout_width="wrap_content"
@@ -262,9 +262,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
+                android:layout_marginBottom="50dp"
                 android:background="@drawable/bg_rounded_btn"
                 android:text="Sign Up"
-                android:layout_marginBottom="50dp"
                 android:textStyle="bold" />
 
         </LinearLayout>

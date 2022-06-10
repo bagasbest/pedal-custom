@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.RadioButton
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -27,6 +28,7 @@ class RegisterActivity : AppCompatActivity() {
     private var binding : ActivityRegisterBinding ? = null
     private var gender = ""
     private var dob = ""
+    private var city = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +36,7 @@ class RegisterActivity : AppCompatActivity() {
         setContentView(binding?.root)
 
         initView()
+        dropdownCity()
 
         binding?.dateRangeBtn?.setOnClickListener {
             showCalendar()
@@ -43,6 +46,20 @@ class RegisterActivity : AppCompatActivity() {
             formValidation()
         }
 
+    }
+
+    private fun dropdownCity() {
+        val adapter = ArrayAdapter.createFromResource(
+            this,
+            R.array.city, android.R.layout.simple_list_item_1
+        )
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        // Apply the adapter to the spinner
+        binding?.city?.setAdapter(adapter)
+        binding?.city?.setOnItemClickListener { _, _, _, _ ->
+            city = binding?.city!!.text.toString()
+        }
     }
 
     private fun showCalendar() {
@@ -68,7 +85,6 @@ class RegisterActivity : AppCompatActivity() {
     private fun formValidation() {
         val email = binding?.email?.text.toString().trim()
         val name = binding?.name?.text.toString().trim()
-        val city = binding?.city?.text.toString().trim()
         val address = binding?.address?.text.toString().trim()
         val phone = binding?.phone?.text.toString().trim()
         val password = binding?.password?.text.toString().trim()
@@ -83,7 +99,7 @@ class RegisterActivity : AppCompatActivity() {
             Toast.makeText(this, "Password must be 6 character or more!", Toast.LENGTH_SHORT).show()
         }  else if (name.isEmpty()) {
             Toast.makeText(this, "Name must be filled!", Toast.LENGTH_SHORT).show()
-        } else if (city.isEmpty()) {
+        } else if (city == "") {
             Toast.makeText(this, "City must be filled!", Toast.LENGTH_SHORT).show()
         } else if (address.isEmpty()) {
             Toast.makeText(this, "Address must be filled!", Toast.LENGTH_SHORT).show()

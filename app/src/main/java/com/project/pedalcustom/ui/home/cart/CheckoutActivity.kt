@@ -174,13 +174,17 @@ class CheckoutActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun getTotalPrice() {
+        val formatter = DecimalFormat("#,###")
+
+        binding?.shipmentPrice?.text = "Shipment Price: Rp${formatter.format(sendingFee)}"
+
 
         totalPrice = 0L
         for(i in cartList.indices) {
             totalPrice += cartList[i].totalPrice!!
         }
-        val formatter = DecimalFormat("#,###")
-        binding?.totalPrice?.text = "Rp${formatter.format(totalPrice+sendingFee)}"
+        binding?.basePrice?.text = "Product Price: Rp${formatter.format(totalPrice)}"
+        binding?.totalPrice?.text = "Total Price: Rp${formatter.format(totalPrice+sendingFee)}"
     }
 
     private fun initRecyclerView() {
@@ -275,9 +279,6 @@ class CheckoutActivity : AppCompatActivity() {
                     100000
                 }
                 getTotalPrice()
-
-                Log.e("tad", userAddress)
-                Log.e("tad", cityMatcher)
             }
     }
 

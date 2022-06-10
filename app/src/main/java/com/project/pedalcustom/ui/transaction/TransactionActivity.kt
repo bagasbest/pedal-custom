@@ -57,8 +57,23 @@ class TransactionActivity : AppCompatActivity() {
             .load(model?.paymentProof)
             .into(binding!!.paymentProof)
 
+        if(model?.status == "Delivered") {
+            binding?.rating?.visibility = View.VISIBLE
+            binding?.rating?.text = "Rating from user: ${model?.rating}"
+        }
+
+        val shipmentPrice = if(model?.userAddress!!.contains("Out of JABODETABEK")){
+            100000
+        } else {
+            50000
+        }
+
         val formatter = DecimalFormat("#,###")
-        binding?.price?.text = "Price : Rp${formatter.format(model?.totalPrice)}"
+        binding?.price?.text = "Product Price : Rp${formatter.format(model?.totalPrice)}"
+        binding?.shipmentPrice?.text = "Shipment Price : Rp${formatter.format(shipmentPrice)}"
+        binding?.totalPrice?.text = "Total Price : Rp${formatter.format(model?.totalPrice?.plus(
+            shipmentPrice
+        ) ?: 0L)}"
 
         binding?.backButton?.setOnClickListener {
             onBackPressed()

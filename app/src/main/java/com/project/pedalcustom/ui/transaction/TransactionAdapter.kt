@@ -43,6 +43,7 @@ class TransactionAdapter(private val role: String) : RecyclerView.Adapter<Transa
         ) {
             with(binding) {
                 val formatter = DecimalFormat("#,###")
+                var shipmentPrice = 0L
                 if(model.category != "custom bike") {
                     Glide.with(itemView.context)
                         .load(model.image)
@@ -80,7 +81,12 @@ class TransactionAdapter(private val role: String) : RecyclerView.Adapter<Transa
                 status.text = model.status
                 name.text = model.productName
                 date.text = model.date
-                price.text = "Rp${formatter.format(model.totalPrice)}"
+                shipmentPrice = if(model.userAddress!!.contains("Out of JABODETABEK")){
+                    100000
+                } else {
+                    50000
+                }
+                price.text = "Rp${formatter.format(model.totalPrice?.plus(shipmentPrice) ?: 0L)}"
 
                 deliver.setOnClickListener {
                     AlertDialog.Builder(itemView.context)

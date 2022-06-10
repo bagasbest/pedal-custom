@@ -1,5 +1,6 @@
 package com.project.pedalcustom.ui.wishlist
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.project.pedalcustom.authentication.LoginActivity
 import com.project.pedalcustom.databinding.FragmentWishlistBinding
 
 class WishlistFragment : Fragment() {
@@ -35,6 +37,14 @@ class WishlistFragment : Fragment() {
         checkIsLoginOrNot()
 
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding.loginBtn.setOnClickListener {
+            startActivity(Intent(activity, LoginActivity::class.java))
+        }
     }
 
     private fun checkIsLoginOrNot() {

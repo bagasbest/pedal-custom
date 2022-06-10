@@ -64,10 +64,6 @@ class ProfileEditCityAddressActivity : AppCompatActivity() {
                 .addOnCompleteListener {
                   if(it.isSuccessful) {
                       Toast.makeText(this, "Successfully update city and address!", Toast.LENGTH_SHORT).show()
-                      val intent = Intent(this, Homepage::class.java)
-                      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
-                      startActivity(intent)
-                      finish()
                   }
                 }
         }

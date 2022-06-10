@@ -39,13 +39,18 @@ class ProfileActivity : AppCompatActivity() {
     private var cityPickerAddEdit = ""
     private var cityAddressList = ArrayList<CityAddressModel>()
 
+    override fun onResume() {
+        super.onResume()
+        retrieveUserData()
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityProfileBinding.inflate(layoutInflater)
         setContentView(binding?.root)
 
         user = FirebaseAuth.getInstance().currentUser
-        retrieveUserData()
 
         binding?.nameEdit?.setOnClickListener {
             shopEditPopup("name")
@@ -197,7 +202,7 @@ class ProfileActivity : AppCompatActivity() {
                     } else {
                         address = "$address, $addressEdit"
                         city = "$city, $cityPickerAddEdit"
-                        setAddress(address, city, "add")
+                        setAddress(address, city)
                     }
                     dialog.dismiss()
                 }
@@ -304,21 +309,19 @@ class ProfileActivity : AppCompatActivity() {
                 binding?.gender?.text = gender
                 binding?.email?.text = email
                 binding?.phone?.text = phone
-                setAddress(address, city, "retrieve")
+                setAddress(address, city, )
             }
     }
 
     @SuppressLint("SetTextI18n")
-    private fun setAddress(address: String, city: String, option: String) {
+    private fun setAddress(address: String, city: String) {
         cityAddressList.clear()
         val listAddress = address.split(",").map { it.trim() }
         val listCity = city.split(",").map { it.trim() }
         var cityWord = ""
         var addressWord = ""
 
-        if (option != "retrieve") {
-            binding?.llAddress?.removeAllViews()
-        }
+        binding?.llAddress?.removeAllViews()
 
         for (i in listAddress.indices) {
 
